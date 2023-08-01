@@ -26,7 +26,7 @@ Route::get('/print-formula-ajustada/{id}/{cant}', 'FormulaController@print_formu
 Route::get('/print-formula-valorada/{id}/{cant}', 'FormulaController@print_formula_valorada');
 Route::get('/print-formula-sin-valorar/{id}/{cant}', 'FormulaController@print_formula_sin_valorar');
 
-//Route::get('/test', 'FormulaController@testt');
+Route::get('/test', 'FormulaController@updateComponents');
 
 
 /* PRINT FORMULAS HIJAS */

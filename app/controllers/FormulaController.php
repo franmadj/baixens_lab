@@ -3,6 +3,17 @@
 class FormulaController extends BaseController {
 
     private $viejos = array('codigo' => '0', 'seccion' => '0', 'nombre' => '0', 'nombre_formula' => '0', 'eq' => '0', 'activa' => '-1', 'search' => '');
+	
+	function updateComponents() {
+
+        $formulas = Formula::all();
+        foreach ($formulas as $formula) {
+
+            $comp = (FormulasDetalle::where('idFormula', $formula->id)->count());
+            $formula->componentes = $comp;
+            $formula->save();
+        }
+    }
 
     function test() {
         //$formulas=Formula::with(array('formulasDetalle' => function($query){  
@@ -260,7 +271,7 @@ class FormulaController extends BaseController {
                                 DB::raw('Max(formulas.parent) as parent'),
                                 DB::raw('Max(formulas.id) as id'),
                                 DB::raw('Max(formulas.numero) as numero'),
-                                DB::raw('count(formulas.esBase) as esBase'),
+                                DB::raw('CAST(Max(CAST(formulas.esBase AS int)) As bit) as esBase'),
                                 DB::raw('Max(formulas.nombre) as nombre'),
                                 DB::raw('Max(formulas.numeroHija) as numeroHija'),
                                 DB::raw('Max(formulas.numero_sate) as numero_sate'),
