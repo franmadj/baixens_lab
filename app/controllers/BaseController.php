@@ -218,6 +218,7 @@ class BaseController extends Controller {
                 return true;
             $n++;
         }
+        //dd($count, count($numbered_rows));
         if ($n == 2 || $count != count($numbered_rows))
             return true;
         return false;
@@ -251,6 +252,23 @@ class BaseController extends Controller {
         if ($n == 2 || $count != count($numbered_rows))
             return true;
         return false;
+    }
+
+    function isDetallesUpdated($formula, $numbered_rows) {
+        $count = 0;
+        foreach ($numbered_rows as $n) {
+            $cantidad = trim(Input::get('det-cantidad-' . $n));
+            $producto = trim(Input::get('det-producto-' . $n));
+            if ($cantidad == '' || $producto == '0')
+                continue;
+            $count++;
+            $cantidad = Input::get('det-cantidad-' . $n);
+            $idProducto = Input::get('det-producto-' . $n);
+            if (!$formula->formulasDetalle()->where('idProducto', $producto)->where('cantidad', $cantidad)->first()) {
+                return true;
+            }
+        }
+        return $formula->formulasDetalle->count() != $count;
     }
 
 }

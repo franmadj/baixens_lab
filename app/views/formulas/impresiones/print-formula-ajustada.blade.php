@@ -96,7 +96,7 @@ body{
                                     <td colspan="3"><small>Nombre:</small> <span class="texto">{{$formula->nombre}}</span>	</td>
                                 </tr>
                                 <tr>
-                                    <td><small>Sección:</small> <span class="texto">{{$formula->SeccionesFormula->seccion}}</span></td>
+                                    <td><small>Sección:</small> <span class="texto">{{$formula->seccion_name}}</span></td>
                                     <td><small>Código fórmula:</small> <span class="texto">{{$formula->codigo}}</span>	</td>
                                     <td><small>Número fórmula:</small> <span class="texto">{{ isset($formula->numero_sate)?$formula->numero_sate:$formula->numero}}</span></td>
                                 </tr>

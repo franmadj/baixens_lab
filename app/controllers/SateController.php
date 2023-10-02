@@ -4,16 +4,58 @@ class SateController extends BaseController {
 
     private $viejos = array('nombre' => '0', 'codigoProducto' => '0', 'codigo' => '-1', 'search' => '', 'fechaDe' => '', 'fechaA' => '');
 
+    function copy_bases_to_sate() {
+
+
+
+        $formulas = Formula::where('idSeccionFormula', 10)->where('parent', '>', 0)->get();
+        foreach ($formulas as $baseColor) {
+            $colores = false;
+
+            $newSate = $baseColor->replicate();
+            $newSate->idSeccionFormula = $_ENV['SATE'];
+            $newSate->numero_sate = $baseColor->numeroHija;
+
+            $parent = Formula::find($baseColor->parent);
+
+            if ($newSate->save()) {
+                $sateId = $newSate->id;
+
+                $parent->formulasDetalle->each(function($detalle)use($sateId, $baseColor, &$colores) {
+                    $newDetalle = $detalle->replicate();
+                    $newDetalle->idFormula = $sateId;
+                    $newDetalle->save();
+                    if (!$colores && 1 == $detalle->esColor) {
+                        $colores = true;
+                        $baseColor->formulasDetalle->each(function($detalleBase)use($sateId) {
+                            $newDetalle = $detalleBase->replicate();
+                            $newDetalle->idFormula = $sateId;
+                            $newDetalle->save();
+                        });
+                    }
+                });
+
+                if (!$colores && $baseColor->formulasDetalle->count()) {
+                    $baseColor->formulasDetalle->each(function($detalleBase)use($sateId) {
+                        $newDetalle = $detalleBase->replicate();
+                        $newDetalle->idFormula = $sateId;
+                        $newDetalle->save();
+                    });
+                }
+            }
+        }
+    }
+
     public function index() {
         $formulas = Formula::sateSection()->paginate(20);
-        if (Input::has('page') && Input::has('filter') && Session::get('filter')) {
-            return $this->post_index(Session::get('filter'));
+        if (Input::has('page') && Input::has('filter') && Session::get('filter_sate')) {
+            return $this->filter(Session::get('filter_sate'));
         }
 
         return View::make('sate/formulas-list', array(
                     'formulas' => $formulas,
                     'nombres' => Formula::formulasByCategory(['0' => 'Nombre Sate'], $_ENV['SATE'], 'nombre'),
-                    'codigos' => Formula::formulasByCategory(['0' => 'Codigo Sate'], $_ENV['SATE'], 'numero'),
+                    'codigos' => Formula::formulasByCategory(['0' => 'Número Sate'], $_ENV['SATE'], 'numero_sate'),
                     'codigosProducto' => Producto::dropDown('codigo'),
                     'viejos' => $this->viejos,
                     'sateActive' => 'active',
@@ -25,14 +67,11 @@ class SateController extends BaseController {
         //dame(Input::all(), 1);
         $input = $filterPaginated ? $filterPaginated : Input::all();
         $imprimir = false;
-        if (Input::has('imprimir')) {
-            $imprimir = true;
-            $max = 10;
-        }
+
         $formulas = new Formula();
         if (isset($input['filtrar'])) {
             if (!$filterPaginated)
-                Session::put('filter', Input::all());
+                Session::put('filter_sate', Input::all());
 
             $filtra = $porId = $formVacia = false;
             if ($input['codigoProducto'] != 0) {
@@ -93,7 +132,7 @@ class SateController extends BaseController {
         return View::make($view, array(
                     'formulas' => $formulas,
                     'nombres' => Formula::formulasByCategory(['0' => 'Nombre Sate'], $_ENV['SATE'], 'nombre'),
-                    'codigos' => Formula::formulasByCategory(['0' => 'Codigo Sate'], $_ENV['SATE'], 'numero'),
+                    'codigos' => Formula::formulasByCategory(['0' => 'Número Sate'], $_ENV['SATE'], 'numero_sate'),
                     'codigosProducto' => Producto::dropDown('codigo'),
                     'user_type' => Auth::user()->type,
                     'viejos' => $this->viejos,
@@ -347,10 +386,10 @@ class SateController extends BaseController {
                         'filasDeMas' => $filasDeMas
             ));
         } else {
-            $isFormulasDetalleUpdate=false;
-            if (Input::has('id')) {
+            $isFormulasDetalleUpdate = false;
+            if ($updating) {
                 $formula = Formula::where('id', Input::get('id'))->sateSection()->first();
-                $isFormulasDetalleUpdate = $this->isFormulasDetalleUpdates($formula->formulasDetalle,$numbered_rows);
+                $isFormulasDetalleUpdate = $this->isFormulasDetalleUpdates($formula->formulasDetalle, $numbered_rows);
                 //var_dump($isFormulasDetalleUpdate);exit;
             } else {
                 $formula = new Formula();
@@ -363,9 +402,11 @@ class SateController extends BaseController {
                 }
                 $formula->numero_sate = $lastSate;
                 $formula->numero = 0;
+                $formula->idSeccionFormula = $_ENV['SATE'];
+                $formula->fechaUltEdicion = time();
             }
-            $formula->fechaUltEdicion = time();
-            $formula->idSeccionFormula = $_ENV['SATE'];
+
+
             $formula->origSeccion = Input::get('secciones');
             $formula->nombre = Input::get('nombre');
             $formula->descripcion = Input::get('descripcion');
@@ -375,12 +416,15 @@ class SateController extends BaseController {
             $formula->pendienteEdicion = '0';
 
             if ($formula->save()) {
-                if (Input::has('id')) {
-                    if ($isFormulasDetalleUpdate)
+                if ($updating) {
+                    if ($isFormulasDetalleUpdate) {
                         $formula->formulasDetalle()->delete();
+                        $formula->fechaUltEdicion = time();
+                        $formulasDetalle->save();
+                    }
                 }
 
-                if ($isFormulasDetalleUpdate)
+                if ($isFormulasDetalleUpdate || !$updating)
                     foreach ($numbered_rows as $n) {
                         //$n = $i + 1;
                         $cant_trim = trim(Input::get('det-cantidad-' . $n));

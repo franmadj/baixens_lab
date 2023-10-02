@@ -49,6 +49,8 @@ Route::get('/ver-print-formula-valoracion/{id}', 'FormulaValoracionController@ve
 Route::get('/print-pintura/{id}/{cant}', 'PinturaController@print_pintura');
 Route::get('/print-sate/{id}/{cant}', 'SateController@print_sate');
 
+Route::get('/copy-bases', 'SateController@copy_bases_to_sate');
+
 
 
 

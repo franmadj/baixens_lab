@@ -81,7 +81,7 @@ body{
                     <tbody>
                             <tr>
                                 <td><small>Nombre:</small> <span class="texto">{{$formula->nombre}}</span>	</td>
-                                <td><small>Sección:</small> <span class="texto">{{$formula->SeccionesFormula->seccion}}</span></td>
+                                <td><small>Sección:</small> <span class="texto">{{$formula->seccion_name}}</span></td>
                             </tr>
                             <tr>
                                 <td><small>Código fórmula:</small> <span class="texto">{{$formula->codigo}}</span>	</td>

@@ -143,7 +143,12 @@ if($data['size']=='Grande'){
 
 
 
-
+if ($formula->idSeccionFormula == $_ENV['SATE'])
+    $seccion = 'Sate';
+elseif ($formula->idSeccionFormula)
+    $seccion = $formula->seccionesFormula->seccion;
+else
+    $seccion = '';
 
 $html.='
 			<table style="background-color:rgba(223,223,223,0.5);margin-top:5px;">
@@ -152,7 +157,7 @@ $html.='
                                     <td colspan="3"><span class="texto">' . $formula->nombre . '</span>	</td>
                                 </tr>
                                 <tr>
-                                    <td><small>Sección:</small> <span class="texto">' . $formula->SeccionesFormula->seccion . '</span></td>
+                                    <td><small>Sección:</small> <span class="texto">' . $seccion . '</span></td>
                                     <td><small>Código fórmula:</small> <span class="texto">' . $formula->codigo . '</span>	</td>
                                     <td><small>Número fórmula:</small> <span class="texto">' . $formula->numero . '</span></td>
                                 </tr>

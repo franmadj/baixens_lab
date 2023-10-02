@@ -119,14 +119,13 @@ class PinturaController extends BaseController {
                 $filtra = $porId = true;
                 $this->viejos['numero_pintura'] = $input['numero_pintura'];
             }
-            
+
             if ($input['selected-ids'] != 0) {
-                $formulas = $formulas->whereIn('formulas.id', explode(',',$input['selected-ids']));
+                $formulas = $formulas->whereIn('formulas.id', explode(',', $input['selected-ids']));
                 $filtra = $porId = true;
-                
             }
-            
-            
+
+
 
             if ($input['eq'] != 0) {
                 $formulasEquivalencias = FormulasEquivalencia::find($input['eq']);
@@ -145,7 +144,7 @@ class PinturaController extends BaseController {
                 $filtra = true;
                 $this->viejos['tipo'] = $input['tipo'];
             }
-            
+
             if ($input['seccion'] != 0) {
                 $formulas = $formulas->where('formulas.idSeccionFormula', $input['seccion']);
                 $filtra = true;
@@ -289,7 +288,9 @@ class PinturaController extends BaseController {
             foreach ($formulas as $formula) {
                 if ($formula->idSeccionFormula != $idSeccion or $idSeccion == '') {
                     $idSeccion = $formula->idSeccionFormula;
-                    if ($formula->SeccionesFormula) {
+                    if ($idSeccion == $_ENV['SATE'])
+                        $seccion_formula = 'Sate';
+                    elseif ($formula->SeccionesFormula) {
                         $seccion_formula = $formula->SeccionesFormula->seccion;
                     } else {
                         $seccion_formula = 'no Seccion DB';
@@ -806,17 +807,12 @@ class PinturaController extends BaseController {
 //            ));
         } else {
             $formulaValidada = $isFormulasDetalleUpdate = false;
-            if (Input::has('id')) {
+            if ($updating) {
                 $formula->allow_notifications = 1;
                 $isFormulasDetalleUpdate = $this->isFormulasDetalleUpdate($formula->formulasDetalle, $numbered_rows);
 
                 if (Input::get('pintura_estado') != 'desarrollo' && $formula->pintura_estado != 'desarrollo' && !$isFormulasDetalleUpdate)
                     $formula->allow_notifications = 0;
-
-
-
-
-
 
                 if (Input::get('pintura_estado') != 'desarrollo' && $formula->pintura_estado == 'desarrollo' && $formula->numero_pintura) {
 
@@ -827,8 +823,6 @@ class PinturaController extends BaseController {
 //                        $formula->idSeccionFormula = $_ENV['PINTURA_VALIDADA_RESERVA']; //reserva
 //                    }
                     //$formulaValidada = true;
-
-
 
                     if ($formula->numero == 0) {
                         $formula->numero = $this->lastFormulaId();
@@ -844,6 +838,7 @@ class PinturaController extends BaseController {
                 $formula->numero_pintura = $this->lastPinturaId();
                 $formula->numero = 0;
                 $formula->allow_notifications = 1;
+                $formula->fechaUltEdicion = time();
             }
 
             $formula->nombre = Input::get('nombre');
@@ -978,7 +973,7 @@ class PinturaController extends BaseController {
                 $formula->y_objetivo = Input::get('y_objetivo', '');
 
             //Forulas campos
-            $formula->fechaUltEdicion = time();
+            
 //            if (!$formulaValidada)
 //                $formula->idSeccionFormula = $_ENV['PINTURAS_DECORATIVAS']; //
 
@@ -1002,11 +997,12 @@ class PinturaController extends BaseController {
 
 
             if ($formula->save()) {
-                if (Input::has('id')) {
-
-
-                    if ($isFormulasDetalleUpdate)
+                if ($updating) {
+                    if ($isFormulasDetalleUpdate){
                         $formula->formulasDetalle()->delete();
+                        $formula->fechaUltEdicion = time();
+                        $formula->save();
+                    }
                     $formula->formulasEquivalencia()->delete();
                 }
                 for ($i = 1; $i < 6; $i++) {
@@ -1117,6 +1113,9 @@ class PinturaController extends BaseController {
         $newPintura->nombre = 'Copy - ' . $newPintura->nombre;
         $newPintura->numero_pintura = $this->lastPinturaId();
         $newPintura->numero = 0;
+        $newPintura->instrucciones = NULL;
+        $newPintura->pintura_estado = 'desarrollo';
+        $newPintura->idSeccionFormula = $_ENV['PINTURA_VALIDADA_ACTIVA'];
         $newPintura->viscosidad_medio = NULL;
         $newPintura->brillo_60_medio = NULL;
         $newPintura->brillo_85_medio = NULL;

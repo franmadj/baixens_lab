@@ -198,7 +198,7 @@
             -->
 
             @if($generalData['current_user']->type==3 || $generalData['current_user']->type==4)
-            <!-- FORMULAS COLOREADAS -->
+            <!-- FORMULAS COLOREADAS 
 
             <li class="{{ isset($formulaActive) ? $formulaActive : '' ;}}">
                 <a href="javascript:;">
@@ -230,6 +230,7 @@
                     </li>
                 </ul>
             </li>
+            -->
 
 
             <!-- SATE -->
@@ -254,6 +255,12 @@
                         <a href="{{ URL::to('/add-sate') }}">
                             <i class="fa fa-pencil"></i>
                             Insertar
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ URL::to('/formulas-base') }}">
+                            <i class="fa fa-eye"></i>
+                            Ver Bases
                         </a>
                     </li>
 

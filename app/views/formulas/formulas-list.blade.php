@@ -180,11 +180,11 @@
                             <td class="seccion">
                                 <div class="color-seccion" style="
                                      display: inline-block;
-                                     background: {{ isset($formula->seccionesFormula->color)?$formula->seccionesFormula->color:'red' }}  ;
+                                     background: {{ $formula->seccion_color }}  ;
                                      width: 15px;
                                      height: 15px;
                                      margin-bottom: -3px;"></div>
-                                {{ isset($formula->seccionesFormula->seccion)?$formula->seccionesFormula->seccion:'' }}  
+                                {{ $formula->seccion_name }}  
                             </td>
                             <td>
                                 <a class="btn btn-success btn-xs fullButton ver-popup" data-id="{{ $id_formula }}" href="#">Ver popup</a>

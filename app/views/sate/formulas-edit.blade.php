@@ -137,6 +137,14 @@ jQuery(document).ready(function ($) {
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="inputEmail1" class="col-md-2 control-label">Fecha útlima edición</label>
+                        <div class="col-md-10">
+                            <p class="form-control-static">
+                                {{$formula->fechaUltEdicion}}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="inputEmail1" class="col-md-2 control-label">Nombre sate</label>
                         <div class="col-md-10">
                             <input tabindex="2" type="text" class="form-control" name="nombre"  {{ (Input::old('nombre')) ? 'value="'.Input::old('nombre').'"' : '' }}

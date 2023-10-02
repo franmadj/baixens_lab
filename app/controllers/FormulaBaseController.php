@@ -313,7 +313,7 @@ class FormulaBaseController extends BaseController {
             $objWriter->save(public_path() . '/files/excel.xlsx');
             header('location: ' . URL::to('/') . '/files/excel.xlsx');
             exit();
-        }elseif ($excel_get) {//////////////////////////////////////////////////////////////////LIST FORMULAS IN EXCEL NORMAL
+        } elseif ($excel_get) {//////////////////////////////////////////////////////////////////LIST FORMULAS IN EXCEL NORMAL
             include(public_path() . "/packages/phpExcel/Classes/PHPExcel.php");
             $objPHPExcel = new PHPExcel();
             $objPHPExcel->setActiveSheetIndex(0);
@@ -329,9 +329,11 @@ class FormulaBaseController extends BaseController {
                 if ($formula->idSeccionFormula != $idSeccion or $idSeccion == '') {
                     $idSeccion = $formula->idSeccionFormula;
 
-                    if ($formula->SeccionesFormula) {
+                    if ($idSeccion == $_ENV['SATE'])
+                        $seccion_formula = 'Sate';
+                    elseif ($formula->seccionesFormula) {
 
-                        $seccion_formula = $formula->SeccionesFormula->seccion;
+                        $seccion_formula = $formula->seccionesFormula->seccion;
                     } else {
                         $seccion_formula = 'no Seccion DB';
                     }
@@ -360,7 +362,7 @@ class FormulaBaseController extends BaseController {
 
                 $equivalencias = $coma = '';
                 foreach ($formula->FormulasEquivalencia as $eq):
-                    $equivalencias.=$coma . $eq->equivalencia;
+                    $equivalencias .= $coma . $eq->equivalencia;
                     $coma = ', ';
                 endforeach;
 
@@ -390,7 +392,7 @@ class FormulaBaseController extends BaseController {
             $objWriter->save(public_path() . '/files/excel.xlsx');
             header('location: ' . URL::to('/') . '/files/excel.xlsx');
             exit();
-        }elseif ($imprimir) {//////////////////////////////////////////////////////////////////LIST FORMULAS IN PRINT
+        } elseif ($imprimir) {//////////////////////////////////////////////////////////////////LIST FORMULAS IN PRINT
             include(public_path() . "/packages/inc/print-pdf-formulas.php");
 
 
@@ -521,8 +523,8 @@ class FormulaBaseController extends BaseController {
         $pendiente = 0;
         if ($accion == 'pendiente')
             $pendiente = 1;
-		
-		
+
+
         return View::make('formulas/formulas-edit', array(
                     'formula' => $formula,
                     'proveedores' => Proveedor::dropDown(),
@@ -550,7 +552,7 @@ class FormulaBaseController extends BaseController {
                     'filasDeMas' => 0, 'formulaActive' => 'active',
         ));
     }
-    
+
     public function get_new_base() {
         return View::make('formulas/formulas-add-base', array(
                     'secciones' => SeccionesFormula::dropDown(),
@@ -591,18 +593,18 @@ class FormulaBaseController extends BaseController {
             $rules += array(
                 'codigoMa' => 'required',
             );
-            /*$cod_base_trim=trim(Input::get('codigoBaseMg'));
-            if ($cod_base_trim != '') {
-                $rules += array(
-                    'codigoBaseMg' => 'required',
-                );
-                $mBase = 'Mg';
-            } else {
-                $rules += array(
-                    'codigoBaseMp' => 'required',
-                );
-                $mBase = 'Mp';
-            }*/
+            /* $cod_base_trim=trim(Input::get('codigoBaseMg'));
+              if ($cod_base_trim != '') {
+              $rules += array(
+              'codigoBaseMg' => 'required',
+              );
+              $mBase = 'Mg';
+              } else {
+              $rules += array(
+              'codigoBaseMp' => 'required',
+              );
+              $mBase = 'Mp';
+              } */
         }
         $numbered_rows = [];
         for ($i = 0; $i <= 100; $i++) {
@@ -693,8 +695,10 @@ class FormulaBaseController extends BaseController {
                         'filasDeMas' => $filasDeMas
             ));
         } else {
-            if (Input::has('id')) {
+            $isDetallesUpdated=false;
+            if ($updating) {
                 $formula = Formula::find(Input::get('id'));
+                $isDetallesUpdated = $this->isDetallesUpdated($formula, $numbered_rows);
 
                 //$idPedido=Input::has('id');
             } else {
@@ -707,9 +711,10 @@ class FormulaBaseController extends BaseController {
                     $lastFor = $lastFor->numero + 1;
                 }
                 $formula->numero = $lastFor;
+                $formula->fechaUltEdicion = time();
                 //dame($lastFor,1);
             } //var_dump(strtotime(swip_date_us_eu(Input::get('fecha')))); exit;
-            $formula->fechaUltEdicion = time();
+
             $formula->idSeccionFormula = Input::get('secciones');
             $formula->nombre = Input::get('nombre');
             $formula->descripcion = Input::get('descripcion');
@@ -718,39 +723,43 @@ class FormulaBaseController extends BaseController {
             $formula->codigo = Input::get('codigo');
             $formula->pendienteEdicion = '0';
             if ($enlucido) {
-				if ((Input::get('codigoBaseMg')))
+                if ((Input::get('codigoBaseMg')))
                     $formula->codigoBaseMg = Input::get('codigoBaseMg');
-				if ((Input::get('codigoBaseMp')))
+                if ((Input::get('codigoBaseMp')))
                     $formula->codigoBaseMp = Input::get('codigoBaseMp');
-				
-                /*if ($mBase == 'Mg') {
-					
 
-                    $formula->codigoBaseMg = '';
-                    if ((Input::get('codigoBaseMg')))
-                        $formula->codigoBaseMg = Input::get('codigoBaseMg');
-                    $formula->codigoBaseMp = '';
-                } else if ($mBase == 'Mp') {
+                /* if ($mBase == 'Mg') {
 
-                    $formula->codigoBaseMp = '';
-                    if ((Input::get('codigoBaseMp')))
-                        $formula->codigoBaseMp = Input::get('codigoBaseMp');
-                    $formula->codigoBaseMg = '';
-                }*/
-				
-				
+
+                  $formula->codigoBaseMg = '';
+                  if ((Input::get('codigoBaseMg')))
+                  $formula->codigoBaseMg = Input::get('codigoBaseMg');
+                  $formula->codigoBaseMp = '';
+                  } else if ($mBase == 'Mp') {
+
+                  $formula->codigoBaseMp = '';
+                  if ((Input::get('codigoBaseMp')))
+                  $formula->codigoBaseMp = Input::get('codigoBaseMp');
+                  $formula->codigoBaseMg = '';
+                  } */
+
+
                 if ((Input::get('codigoMa')))
                     $formula->codigoMa = Input::get('codigoMa');
             }
             if ($formula->save()) {
-                if (Input::has('id')) {
-                    $formula->formulasDetalle()->delete();
+                if ($updating) {
+                    if ($isDetallesUpdated) {
+                        $formula->formulasDetalle()->delete();
+                        $formula->fechaUltEdicion = time();
+                        $formula->save();
+                    }
                     $formula->formulasEquivalencia()->delete();
                 }
                 for ($i = 1; $i < 6; $i++) {
-                    $eq_trim=trim(Input::get('equivalencia-' . $i));
-                    $cod_trim=trim(Input::get('codigo-' . $i));
-                    if ( $eq_trim != '' && $cod_trim != '') {
+                    $eq_trim = trim(Input::get('equivalencia-' . $i));
+                    $cod_trim = trim(Input::get('codigo-' . $i));
+                    if ($eq_trim != '' && $cod_trim != '') {
                         $equivalencia = new FormulasEquivalencia();
                         $equivalencia->codigo = trim(Input::get('codigo-' . $i));
                         $equivalencia->equivalencia = trim(Input::get('equivalencia-' . $i));
@@ -758,24 +767,28 @@ class FormulaBaseController extends BaseController {
                         $equivalencia->save();
                     }
                 }
-                foreach ($numbered_rows as $n) {
-                    //$n = $i + 1;
-                    $cant_trim=trim(Input::get('det-cantidad-' . $n));
-                    $cant_producto=trim(Input::get('det-producto-' . $n));
-                    if ($cant_trim == '' || $cant_producto == '0')
-                        continue;
-                    $formulasDetalle = new FormulasDetalle();
-                    $formulasDetalle->cantidad = Input::get('det-cantidad-' . $n);
-                    $formulasDetalle->idProducto = Input::get('det-producto-' . $n);
-                    $formulasDetalle->idFormula = $formula->id;
-					
-                    if ($enlucido) {
-                        $formulasDetalle->enlucido = Input::get('det-enlucido-' . $n);
+
+                //SAVE DETALLES
+                if ($isDetallesUpdated || !$updating) {
+                    foreach ($numbered_rows as $n) {
+                        //$n = $i + 1;
+                        $cant_trim = trim(Input::get('det-cantidad-' . $n));
+                        $cant_producto = trim(Input::get('det-producto-' . $n));
+                        if ($cant_trim == '' || $cant_producto == '0')
+                            continue;
+                        $formulasDetalle = new FormulasDetalle();
+                        $formulasDetalle->cantidad = Input::get('det-cantidad-' . $n);
+                        $formulasDetalle->idProducto = Input::get('det-producto-' . $n);
+                        $formulasDetalle->idFormula = $formula->id;
+
+                        if ($enlucido) {
+                            $formulasDetalle->enlucido = Input::get('det-enlucido-' . $n);
+                        }
+                        //dame($formulasDetalle,1);
+                        $formulasDetalle->save();
+                        $formulasDetalle->orden = $formulasDetalle->id;
+                        $formulasDetalle->save();
                     }
-                    //dame($formulasDetalle,1);
-                    $formulasDetalle->save();
-					$formulasDetalle->orden = $formulasDetalle->id;
-					$formulasDetalle->save();
                 }
             } else {
                 return Redirect::to('formulas')->with('mensaje', $this->get_message('ko', 'Error de Inserción!! '));
@@ -783,13 +796,11 @@ class FormulaBaseController extends BaseController {
             if ($pendiente) {
                 return Redirect::to('informes-formulas-valoracion')->with('procesarPendientes', true);
             } else {
-				if ($updating){
-					return Redirect::back()->withInput()->with('mensaje', $this->get_message('ok', 'Inserción con éxito!! '));
-				}else{
-					return Redirect::to('edit-formula/'.$formula->id.'/edicion');
-					
-					
-				}
+                if ($updating) {
+                    return Redirect::back()->withInput()->with('mensaje', $this->get_message('ok', 'Inserción con éxito!! '));
+                } else {
+                    return Redirect::to('edit-formula/' . $formula->id . '/edicion');
+                }
                 //return Redirect::to('formulas')->with('mensaje', $this->get_message('ok', 'Inserción con éxito!! '));
             }
         }
@@ -804,7 +815,7 @@ class FormulaBaseController extends BaseController {
         $formulasDet = array();
         $cantidad = 0;
         foreach ($formula->FormulasDetalle as $laFormula) {
-            $cantidad+=$laFormula->cantidad;
+            $cantidad += $laFormula->cantidad;
         }
         $valorPromedio = $cantProduccion / $cantidad;
         $i = 0;
@@ -881,7 +892,7 @@ class FormulaBaseController extends BaseController {
         $data = array(
             'formula' => $formula, 'formulaActive' => 'active', 'user_img' => $user_img, 'logo_img' => 'logo_color.jpg',
         );
-        
+
         return View::make('formulas/impresiones/print-formula-valorada', $data);
     }
 
@@ -915,14 +926,14 @@ class FormulaBaseController extends BaseController {
         $data = array(
             'formula' => $formula, 'formulaActive' => 'active', 'user_img' => $user_img, 'logo_img' => 'logo_color.jpg',
         );
-		
-		require_once public_path() . "/packages/inc/pdf-formula-ajustada.php";
+
+        require_once public_path() . "/packages/inc/pdf-formula-ajustada.php";
         //return View::make('formulas/impresiones/print-formula-ajustada', $data);
     }
 
-    /*public function pdf_formula_ajustada($id, $cantProduccion) {
-        $this->print_pdf();
-    }*/
+    /* public function pdf_formula_ajustada($id, $cantProduccion) {
+      $this->print_pdf();
+      } */
 
     public function ajax_set_equivalencia_display() {
         $res = DB::table('formulas_equivalencias')->where('id', Input::get('id'))->update(array(
@@ -943,10 +954,6 @@ class FormulaBaseController extends BaseController {
         }
         return $formula;
     }
-    
-    
-    
-    
 
     public function print_formula_ajustada_ma($id, $cantProduccion, $size) {
         $formula = Formula::find($id);
@@ -984,4 +991,4 @@ class FormulaBaseController extends BaseController {
     }
 
 }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+

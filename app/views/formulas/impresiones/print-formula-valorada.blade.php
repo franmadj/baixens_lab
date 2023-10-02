@@ -109,7 +109,7 @@
                             @endif
                         
                         </td>
-                        <td><small>Sección:</small> <span class="texto">{{$formula->SeccionesFormula->seccion}}</span></td>
+                        <td><small>Sección:</small> <span class="texto">@if($formula->idSeccionFormula==5000) Sate @else {{$formula->seccionesFormula->seccion}} @endif</span></td>
                     </tr>
                     <tr>
                         <td><small>Código fórmula:</small> <span class="texto">{{$formula->codigo}}</span>	</td>

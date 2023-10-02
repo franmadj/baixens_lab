@@ -80,7 +80,7 @@ return false;
                 @if(Session::has('mensaje'))
                 <div class="col-md-12 success-validation" >{{Session::get('mensaje')}}</div>
                 @else
-                
+
                 @endif
                 <div class="col-md-12 error-validation" ></div>
                 <hr>
@@ -166,6 +166,15 @@ return false;
                                 <div class="col-md-10">
                                     <p class="form-control-static">
                                         {{ isset($formula->fecha)? $formula->fecha: ''  }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inputEmail1" class="col-md-2 control-label">Fecha útlima edición</label>
+                                <div class="col-md-10">
+                                    <p class="form-control-static">
+                                        {{$formula->fechaUltEdicion}}
                                     </p>
                                 </div>
                             </div>
@@ -346,11 +355,11 @@ return false;
                                             <td>
                                                 <input class="form-control vocTotales" type="text" disabled="" placeholder="Sale de calculo">
                                             </td>
-                                            
+
                                             <td>
                                                 <input class="form-control vocTotalesP" type="text" disabled="" placeholder="Sale de calculo">
                                             </td>
-                                            
+
                                             <td>
                                                 <input class="form-control vocTotalesT" type="text" disabled="" placeholder="Sale de calculo">
                                             </td>

@@ -1,9 +1,5 @@
 <?php
 
-
-
-
-
 $html = '
 <html>
 <head>
@@ -134,29 +130,37 @@ mpdf-->
 
 
 
-                
-					
-                    $idSeccion='';
-					
+
+
+$idSeccion = '';
+
 foreach ($formulas as $formula) {
     if ($formula->idSeccionFormula != $idSeccion) {
         $idSeccion = $formula->idSeccionFormula;
 
-        $html.='
+        $html .= '
                         <tr class="min">
                             <td colspan="5" width="100%" class="minimo_titulo" style="text-align:center; background-color:#FAFAFA"><h1>';
 
-        if ($formula->SeccionesFormula) {
 
-            $html.= $formula->SeccionesFormula->seccion;
-        } else {
-            $html.= 'no Seccion DB';
-        }
+        if ($formula->idSeccionFormula == $_ENV['SATE'])
+            $html .= 'Sate';
+        elseif ($formula->idSeccionFormula)
+            $html .= $formula->SeccionesFormula->seccion;
+        else
+            $html .= 'no Seccion DB';
+
+//        if ($formula->SeccionesFormula) {
+//
+//            $html .= $formula->SeccionesFormula->seccion;
+//        } else {
+//            $html .= 'no Seccion DB';
+//        }
 
 
 
 
-        $html.='</h1></td> 
+        $html .= '</h1></td> 
                         </tr>
                     
                         <tr class="black">
@@ -166,25 +170,25 @@ foreach ($formulas as $formula) {
                             <td ><strong>Equivalencias</strong>	</td>
                             <td><strong>Importe €</strong>	</td>
                         </tr>';
-    } 
+    }
     $coma = '';
 
-    $html.='<tr>
-                                <td><small>'.$formula->numero.'</small></td>
-                                <td><small>'.$formula->codigo.'</small></td>
-                                <td><small>'.$formula->nombre.'</small></td>
+    $html .= '<tr>
+                                <td><small>' . $formula->numero . '</small></td>
+                                <td><small>' . $formula->codigo . '</small></td>
+                                <td><small>' . $formula->nombre . '</small></td>
                                 <td><small>';
-    
+
     foreach ($formula->FormulasEquivalencia as $eq) {
-        $html.= $coma . $eq->equivalencia . '<br>';
+        $html .= $coma . $eq->equivalencia . '<br>';
         $coma = ', ';
     }
-    $html.='</small></td><td><small>' . Formula::importe($formula->id) . '</small></td></tr>';
+    $html .= '</small></td><td><small>' . Formula::importe($formula->id) . '</small></td></tr>';
 }
 
 
-								
-$html.='</table></body></html>';
+
+$html .= '</table></body></html>';
 //echo $html;exit;
 
 
@@ -192,26 +196,24 @@ include(public_path() . "/packages/MPDF57/mpdf.php");
 
 
 
-$mpdf = new mPDF('',    // mode - default
-		 '',    // format - A4, for example, default
-		 0,     // font size - default 0
-		 '',    // default font family
-		 0,    // margin_left
-		 0,    // margin right
-		 45,     // margin top
-		 20,    // margin bottom
-		 'L');  // L - landscape, P - portrait
-	 
-        $mpdf->SetDisplayMode('fullpage');
-        $mpdf->list_indent_first_level = 0; // 1 or 0 - whether to indent the first level of a list
-		
-		//$mpdf->SetWatermarkImage('http://laboratorio/img/laboratorio_fondo.jpg', 0.7);
+$mpdf = new mPDF('', // mode - default
+        '', // format - A4, for example, default
+        0, // font size - default 0
+        '', // default font family
+        0, // margin_left
+        0, // margin right
+        45, // margin top
+        20, // margin bottom
+        'L');  // L - landscape, P - portrait
 
+$mpdf->SetDisplayMode('fullpage');
+$mpdf->list_indent_first_level = 0; // 1 or 0 - whether to indent the first level of a list
+//$mpdf->SetWatermarkImage('http://laboratorio/img/laboratorio_fondo.jpg', 0.7);
 //$mpdf->showWatermarkImage = true;
-		
-	
-        $mpdf->WriteHTML($html);
-        $mpdf->Output();
-        exit;
+
+
+$mpdf->WriteHTML($html);
+$mpdf->Output();
+exit;
 ?>
 

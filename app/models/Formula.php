@@ -25,6 +25,27 @@ class Formula extends Eloquent {
         return $this->hasMany('FormulasEquivalencia', 'idFormula');
     }
 
+    function getSeccionNameAttribute() {
+        if ($_ENV['SATE'] == $this->idSeccionFormula) {
+            return 'Sate';
+        }elseif($this->seccionesFormula){
+            return $this->seccionesFormula->seccion;
+        }else{
+            return 'Sección';
+        }
+    }
+    
+    function getSeccionColorAttribute() {
+        if ($_ENV['SATE'] == $this->idSeccionFormula) {
+            return '#5BC0DE';
+        }elseif($this->seccionesFormula){
+            return $this->seccionesFormula->color;
+        }else{
+            return 'red';
+        }
+    }
+
+
     public static function dropDown($nf = false) {
         $name = $nf ? 'NF' : 'Formulas';
         $default = array('0' => $name);
@@ -86,7 +107,7 @@ class Formula extends Eloquent {
         return ['' => 'Selecciona', 'agua' => 'Agua', 'tio2' => 'TiO2', 'carga' => 'Carga', 'disolvente' => 'Disolvente', 'aditivo' => 'Aditivo', 'ligante' => 'Ligante'];
     }
 
-    public static function pinturaTipoProductosSelect($tipos, $default=NULL) {
+    public static function pinturaTipoProductosSelect($tipos, $default = NULL) {
         $html = '';
         foreach ($tipos as $key => $val) {
             $selected = '';
@@ -154,10 +175,10 @@ class Formula extends Eloquent {
         $date = intval($value) ? date('d-m-Y', $value) : '';
         return $date ?: '';
     }
-    
+
     public function getFechaUltEdicionAttribute($value) {
         $date = intval($value) ? date('d-m-Y', $value) : '';
-        return $date ?: '';
+        return $date ?: $this->fecha;
     }
 
     public function getNumeroPinturaAttribute($value) {

@@ -53,9 +53,10 @@ $html = '
 					
 				}
 				table tr td{
-					border: 0.1 solid rgba(182,182,182,1.00);
+					border: solid thin rgba(182,182,182,1.00);
 					border-collapse: collapse;
 					padding:5px;
+                                        border-top:none;
 				}
 				table tr{
 					width:100%;
@@ -101,10 +102,19 @@ $html = '
 				}
 				table.cuerpo tr td{
 					height:30.300px;
-				}';
+				}
+                                #encabezado-detalles td,#encabezado-detalles tr{
+                                padding:0px;
+                                }
+                                #encabezado-detalles span.texto{
+					font-size:5px !important;
+				}
+                                
+';
 
 $esPinturas = formulaEsPinturas($formula->idSeccionFormula);
-
+$debug = false;
+;
 
 if (in_array($formula->idSeccionFormula, [3, 11, 5, 10, 8, 14, 15]))
     $html .= 'table.t-margin-left{margin-left:180px;}';
@@ -116,26 +126,15 @@ $html .= '</style>
 </head>
 <body>
 
-<!--mpdf
-<htmlpageheader name="myheader">
-<div style="position: relative;">
-                <img class="body" src="http://laboratorio/img/laboratorio_fondo.jpg" style="width: 100%; margin: 0;" />
-            </div>
-
-
-</htmlpageheader>
-<htmlpagefooter name="myfooter">
-<div style="border-top: 1px solid #000000; font-size: 9pt; text-align: center; padding-top: 3mm; ">
-Página {PAGENO} de {nb}
-</htmlpagefooter>
-<sethtmlpageheader name="myheader" value="on" show-this-page="1" />
-<sethtmlpagefooter name="myfooter" value="on" />
-mpdf-->
-
-
-
+<div style="width:580px;margin:auto;color:black;padding-bottom:8px;text-align:_center;font-size:8.6px;">ESTABLECIMIENTOS BAIXENS, S.L. Polígono Industrial Moncarra, s/n. 46230 Alginet(Valencia) - España - Tel.:+34 96 1750834 - Fax:+34 96 1752471</div>
 <table>
+
                             <tr style="width:100%;">';
+
+
+
+
+///////////////////FRANJA ROSA ENCABEZADO////////////////////////////////////////
 if (!isset($data['enlucido'])) {
     $html .= '<td style="text-align:center; background-color:#F78181;padding:2px;" colspan="3"><h1>FÓRMULA AJUSTADA A PRODUCCIÓN</h1></td></table>';
 } else {
@@ -147,6 +146,10 @@ $codigo_maquina = false;
 
 
 
+
+
+
+
 $equiv = false;
 $coma = $equivs = $equivsOut = '';
 foreach ($formula->FormulasEquivalencia as $eq) {
@@ -154,63 +157,137 @@ foreach ($formula->FormulasEquivalencia as $eq) {
         $equiv = $eq->equivalencia;
         $equivs .= $coma . $eq->equivalencia;
         $coma = ', ';
-        $formula->codigo = $eq->codigo;
+        $formula->codigo = trim($eq->codigo);
     }
 }
 
 if (!$esPinturas) {
     $equiv = $equiv ?: $formula->nombre;
-    $nombre = '<td colspan="3"><span class="texto">' . $equiv . '</span>	</td>';
+    $nombre = '<td colspan="4" style="width:100%;"><span class="texto" style="font-size:12px;">' . $equiv . '</span>	</td>';
 } else {
     $equivsOut = '<div>' . $equivs . '</div>';
-    $nombre = '<td colspan="3"><span class="texto">' . $formula->nombre . '</span>' . $equivsOut . '</td>';
+    $nombre = '<td colspan="4" style="width:100%;font-size:12px;"><span style="font-size:12px;" class="texto">' . $formula->nombre . '</span>' . $equivsOut . '</td>';
 }
 
-$html .= '<table style="background-color:rgba(223,223,223,0.5);margin-top:5px;" class="t-margin-left">
-                        <tbody>
-                                <tr>
+//$debug = true;
+///////////////ENCABEZADO FORMULA////////////////////////////////
+$html .= '<table id="encabezado-detalles" style="background-color:rgba(223,223,223,0.5);margin-top:0px;widh:100%;">
+                        <tbody>';
+
+
+
+
+
+/////////////////////TR 1////////////////////
+$html .= '<tr>
+                                <td rowspan="2" style="background:white; width:10%"><img class="body" src="/img/logo_color.jpg" style="width: 40px; margin-right:2px;margin-left:2px;" /></td>
                                     ' . $nombre . '
                                 </tr>';
-if ($esPinturas)
-    $html .= '<tr><td colspan="3"><small>Número fórmula:</small> <span class="texto">' . $formula->numero . '</span></td></tr>';
 
 
-$html .= '<tr>
-                                    <td><small>Sección:</small> <span class="texto">' . $formula->SeccionesFormula->seccion . '</span></td>
-                                    <td><small>Código fórmula:</small> <span class="texto">' . $formula->codigo . '</span>	</td>';
-if ($esPinturas)
-    $html .= '<td><small>Número pintura:</small> <span class="texto">' . $formula->numero_pintura . '</span></td>';
+
+
+///////////////////////////////////////
+//if ($esPinturas)
+//    $html .= '<tr><td colspan="2"><small>Núm. fórmula:</small> <span class="texto">' . $formula->numero . '</span></td></tr>';
+
+
+
+if ($formula->idSeccionFormula == $_ENV['SATE'])
+    $seccion = 'Sate';
+elseif ($formula->idSeccionFormula)
+    $seccion = $formula->seccionesFormula->seccion;
 else
-    $html .= '<td><small>Número fórmula:</small> <span class="texto">' . $formula->numero . '</span></td>';
+    $seccion = '';
 
-'</tr>
-                                <tr>
-                                    
-                                    <td colspan="3"><small>Fecha:</small> <span class="texto">';
-$html .= $formula->fecha;
-$html .= '</span></td>
-                                </tr>
-                                
-<tr>';
+/////////////////////TR 3////////////////////
+$html .= '<tr>';
+$codFormula = trim($formula->codigo);
+$numPintura = trim($formula->numero_pintura);
+$numFormula = trim($formula->numero);
+
+
+
+$colspan = '';
+if (!$codFormula) {
+    $colspan = ' colspan="2"';
+} elseif (!$esPinturas && !$formula->numero) {
+    $colspan = ' colspan="2"';
+}
+
+if (!$esPinturas && !$formula->numero && !$codFormula) {
+    $colspan = ' colspan="3"';
+}
+
+$html .= '<td ' . $colspan . '>';
+$html .= '<small>Sección:</small> <span class="texto">' . $seccion . '</span>';
+$html .= '</td>';
+
+
+
+if ($codFormula) {
+    $html .= '<td>';
+    $html .= ' <small>Cód. fórmula:</small><span class="texto">' . $codFormula . '</span>';
+    $html .= '</td>';
+}
+
+if ($esPinturas && $numPintura) {
+    $html .= '<td>';
+    $html .= ' <small>Núm. pintura:</small> <span class="texto">' . $formula->numero_pintura . '</span>';
+    $html .= '</td>';
+}
+
+if ($formula->numero && $numFormula) {
+    $html .= '<td>';
+    $html .= ' <span class="texto" style="color:red;">NF' . $formula->numero . '</span>';
+    $html .= '</td>';
+}
+
+
+
+$html .= '<td>';
+$html .= '<span class="texto">' . $formula->fechaUltEdicion . '</span>';
+$html .= '</td>';
+
+$html .= '</tr>';
+
+
+
+
+
+
+
+
+
+
+/////////////////////TR 4////////////////////
+$html .= '<tr>';
 if ($formula->instrucciones != '') {
-
-    $html .= '<td colspan="4"><small>Instruccion de Trabajo:</small> <span class="texto">';
+    $html .= '<td colspan="5"><small>IT.:</small> <span class="texto">';
     $html .= $formula->instrucciones;
     $html .= '</span></td>';
 }
-$html .= '</tr>
-                                
-                        </tbody>
-                        
-                    </table>';
+$html .= '</tr></tbody></table>';
 
 
 
-$html .= '<table style="margin-top:5px;" class="cuerpo t-margin-left">
+
+
+
+
+
+
+
+
+
+
+
+///////////////////CUERPO///////////////////////////////
+$html .= '<table style="margin-top:0px;" class="cuerpo t-margin-left">
                         <thead class="center">
                             <tr>
-                                <td style="width:30%;"><strong class="center">CANTIDAD</strong>	</td>
-                                <td style="width:70%;"><strong class="center">PRODUCTO</strong>	</td>
+                                <td style="width:30%;border-top:0;"><strong class="center">CANTIDAD</strong>	</td>
+                                <td style="width:70%;border-top:0;"><strong class="center">PRODUCTO</strong>	</td>
                             </tr>
                         </thead>
                         
@@ -230,23 +307,19 @@ foreach ($formula->FormulasDetalle as $formDet) {
 
 $html .= '<tr>
                                     <td  class="right"><span class="texto" style="font-weight:bold;">' . round($pesoTotal) . ' Kg.</span></td>
-                                    <td style=" border:none;"></td>
+                                    <td style=" border:none;"><small>Nº de componentes</small> <strong class="pesoTotal">' . $numComp . '</strong></td>
                              </tr>
                         </tbody>
                         
                     </table>
                     
                     
-                    <table style="margin-top:10px; border:none;" class="t-margin-left">
-                        <tbody>
-                                <tr>
-                                    <td style="width:40%; border:none; "><small>Nº de componentes</small> <strong class="pesoTotal">' . $numComp . '</strong></td>
-                                    <td style="text-align:left; vertical-align:text-top; border:none; width:60%;"></td>
-                                </tr>
-                        </tbody>
-                        
-                    </table></body></html>';
-//echo $html;exit;
+                    </body></html>';
+
+if ($debug) {
+    echo $html;
+    exit;
+}
 
 
 include(public_path() . "/packages/MPDF57/mpdf.php");
@@ -259,7 +332,7 @@ $mpdf = new mPDF('', // mode - default
         '', // default font family
         0, // margin_left
         0, // margin right
-        20, // margin top
+        4, // margin top
         20, // margin bottom
         'L');  // L - landscape, P - portrait
 

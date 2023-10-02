@@ -3,8 +3,8 @@
 class FormulaController extends BaseController {
 
     private $viejos = array('codigo' => '0', 'seccion' => '0', 'nombre' => '0', 'nombre_formula' => '0', 'eq' => '0', 'activa' => '-1', 'search' => '');
-	
-	function updateComponents() {
+
+    function updateComponents() {
 
         $formulas = Formula::all();
         foreach ($formulas as $formula) {
@@ -268,17 +268,17 @@ class FormulaController extends BaseController {
                 $this->viejos['codigo'] = $input['codigo'];
                 if ($filtrar_get or $imprimir or $excel_get) {
                     $formulas = $formulas->select([
-                                DB::raw('Max(formulas.parent) as parent'),
-                                DB::raw('Max(formulas.id) as id'),
-                                DB::raw('Max(formulas.numero) as numero'),
-                                DB::raw('CAST(Max(CAST(formulas.esBase AS int)) As bit) as esBase'),
-                                DB::raw('Max(formulas.nombre) as nombre'),
-                                DB::raw('Max(formulas.numeroHija) as numeroHija'),
-                                DB::raw('Max(formulas.numero_sate) as numero_sate'),
-                        DB::raw('Max(formulas.idSeccionFormula) as idSeccionFormula'),
-                            ])
-                            ->join('formulas_detalle', 'formulas.id', '= ', 'formulas_detalle.idFormula')
-                            ->where('formulas_detalle.idProducto', $input['codigo'])->groupBy('formulas.id');
+                                        DB::raw('Max(formulas.parent) as parent'),
+                                        DB::raw('Max(formulas.id) as id'),
+                                        DB::raw('Max(formulas.numero) as numero'),
+                                        DB::raw('CAST(Max(CAST(formulas.esBase AS int)) As bit) as esBase'),
+                                        DB::raw('Max(formulas.nombre) as nombre'),
+                                        DB::raw('Max(formulas.numeroHija) as numeroHija'),
+                                        DB::raw('Max(formulas.numero_sate) as numero_sate'),
+                                        DB::raw('Max(formulas.idSeccionFormula) as idSeccionFormula'),
+                                    ])
+                                    ->join('formulas_detalle', 'formulas.id', '= ', 'formulas_detalle.idFormula')
+                                    ->where('formulas_detalle.idProducto', $input['codigo'])->groupBy('formulas.id');
                 } elseif ($excel_new_get or $imprimir) {
                     $formulas = $formulas
                             ->where('formulas_detalle.idProducto', $input['codigo']);
@@ -315,8 +315,9 @@ class FormulaController extends BaseController {
                         ->where(function ($query)use($input) {
                     $query->where('formulas.nombre', 'like', '%' . $input['search'] . '%')
                     ->orWhere('formulas.descripcion', 'like', '%' . $input['search'] . '%')
+                    ->orWhere('formulas.instrucciones', 'like', '%' . $input['search'] . '%')
                     ->orWhere('formulas.codigo', 'like', '%' . $input['search'] . '%')
-                    ->orWhere('formulas.codigo', 'like', '%' . str_replace('-', '', $input['search']) . '%');
+                    ->orWhere('formulas.codigo', 'like', '%' . str_replace('-', '', $input['search']) . '%'); //instrucciones
                 });
                 $filtra = true;
                 $this->viejos['search'] = $input['search'];
@@ -459,8 +460,10 @@ class FormulaController extends BaseController {
             foreach ($formulas as $formula) {
                 if ($formula->idSeccionFormula != $idSeccion or $idSeccion == '') {
                     $idSeccion = $formula->idSeccionFormula;
-                    if ($formula->SeccionesFormula) {
-                        $seccion_formula = $formula->SeccionesFormula->seccion;
+                    if ($idSeccion == $_ENV['SATE'])
+                        $seccion_formula = 'Sate';
+                    elseif ($formula->seccionesFormula) {
+                        $seccion_formula = $formula->seccionesFormula->seccion;
                     } else {
                         $seccion_formula = 'no Seccion DB';
                     }
@@ -509,10 +512,10 @@ class FormulaController extends BaseController {
             //return View::make('formulas/impresiones/print-formulas', $data);
         } else {//////////////////////////////////////////////////////////////////LIST FORMULAS IN HTML
             $url_base = '';
-            $url_base_active = '';
+            $url_base_active = 'formulaActive';
             if ($input['esBase'] == '1') {
                 $url_base = '-base';
-                $url_base_active = 'Base';
+                $url_base_active = 'sateActive';
             }
             if (isset($input['is_pinturas'])) {
                 $view = 'formulas/formulas-list-pinturas';
@@ -527,7 +530,8 @@ class FormulaController extends BaseController {
                         'user_type' => Auth::user()->type,
                         'eqs' => FormulasEquivalencia::dropDown(),
                         'codigos' => Producto::dropDown('codigo'),
-                        'viejos' => $this->viejos, 'formula' . $url_base_active . 'Active' => 'active',
+                        'viejos' => $this->viejos,
+                        $url_base_active => 'active',
                         'base' => $input['esBase'],
                         'url_base' => $url_base,
                         'filter' => true
@@ -819,8 +823,13 @@ class FormulaController extends BaseController {
                         'filasDeMas' => $filasDeMas
             ));
         } else {
-            if (Input::has('id')) {
+            $isDetallesUpdated=false;
+            if ($updating) {
                 $formula = Formula::find(Input::get('id'));
+
+                $isDetallesUpdated = $this->isDetallesUpdated($formula, $numbered_rows);
+
+
                 //Si estaba en laboratorio y pasa a ser cualquier otra que no sea laboratorio la formula se activa o si pasa de desccion descatalogado a cualquier otra
                 if (($formula->idSeccionFormula == 4 && 4 != Input::get('secciones')) or ( $formula->idSeccionFormula == 6 && 6 != Input::get('secciones'))) {
                     $formula->activa = 1;
@@ -830,8 +839,9 @@ class FormulaController extends BaseController {
                 $formula = new Formula();
                 $formula->fecha = time();
                 $formula->numero = $this->lastFormulaId();
+                $formula->fechaUltEdicion = time();
             } //var_dump(strtotime(swip_date_us_eu(Input::get('fecha')))); exit;
-            $formula->fechaUltEdicion = time();
+
             $formula->idSeccionFormula = Input::get('secciones');
             $formula->origSeccion = Input::get('secciones');
             $formula->nombre = Input::get('nombre');
@@ -841,27 +851,16 @@ class FormulaController extends BaseController {
             $formula->codigo = Input::get('codigo');
             $formula->pendienteEdicion = '0';
             if ($enlucido) {
-                //if (Input::get('codigoBaseMg'))
                 $formula->codigoBaseMg = Input::get('codigoBaseMg');
-                //if ((Input::get('codigoBaseMp')))
                 $formula->codigoBaseMp = Input::get('codigoBaseMp');
-                /* if ($mBase == 'Mg') {
-                  $formula->codigoBaseMg = '';
-                  if ((Input::get('codigoBaseMg')))
-                  $formula->codigoBaseMg = Input::get('codigoBaseMg');
-                  $formula->codigoBaseMp = '';
-                  } else if ($mBase == 'Mp') {
-                  $formula->codigoBaseMp = '';
-                  if ((Input::get('codigoBaseMp')))
-                  $formula->codigoBaseMp = Input::get('codigoBaseMp');
-                  $formula->codigoBaseMg = '';
-                  } */
-                //if ((Input::get('codigoMa')))
                 $formula->codigoMa = Input::get('codigoMa');
             }
             if ($formula->save()) {
-                if (Input::has('id')) {
-                    $formula->formulasDetalle()->delete();
+                if ($updating) {
+                    if ($isDetallesUpdated) {
+                        $formula->formulasDetalle()->delete();
+                        $formula->fechaUltEdicion = time();
+                    }
                     $formula->formulasEquivalencia()->delete();
                 }
                 for ($i = 1; $i < 6; $i++) {
@@ -875,27 +874,32 @@ class FormulaController extends BaseController {
                         $equivalencia->save();
                     }
                 }
-                $numComponentes = 0;
-                foreach ($numbered_rows as $n) {
-                    //$n = $i + 1;
-                    $cant_trim = trim(Input::get('det-cantidad-' . $n));
-                    $cant_producto = trim(Input::get('det-producto-' . $n));
-                    if ($cant_trim == '' || $cant_producto == '0')
-                        continue;
-                    $formulasDetalle = new FormulasDetalle();
-                    $formulasDetalle->cantidad = Input::get('det-cantidad-' . $n);
-                    $formulasDetalle->idProducto = Input::get('det-producto-' . $n);
-                    $formulasDetalle->idFormula = $formula->id;
 
-                    if ($enlucido) {
-                        $formulasDetalle->enlucido = Input::get('det-enlucido-' . $n);
+                //SAVE DETALLES
+                if ($isDetallesUpdated || !$updating) {
+                    $numComponentes = 0;
+                    foreach ($numbered_rows as $n) {
+                        $cant_trim = trim(Input::get('det-cantidad-' . $n));
+                        $cant_producto = trim(Input::get('det-producto-' . $n));
+                        if ($cant_trim == '' || $cant_producto == '0')
+                            continue;
+                        $formulasDetalle = new FormulasDetalle();
+                        $formulasDetalle->cantidad = Input::get('det-cantidad-' . $n);
+                        $formulasDetalle->idProducto = Input::get('det-producto-' . $n);
+                        $formulasDetalle->idFormula = $formula->id;
+                        if ($enlucido) {
+                            $formulasDetalle->enlucido = Input::get('det-enlucido-' . $n);
+                        }
+                        $numComponentes++;
+                        $formulasDetalle->save();
+                        $formulasDetalle->orden = $formulasDetalle->id;
+                        $formulasDetalle->save();
                     }
-                    $numComponentes++;
-                    $formulasDetalle->save();
-                    $formulasDetalle->orden = $formulasDetalle->id;
-                    $formulasDetalle->save();
+                    $formula->componentes = $numComponentes;
                 }
-                $formula->componentes = $numComponentes;
+
+
+
                 $formula->save();
             } else {
                 return Redirect::to('formulas')->with('mensaje', $this->get_message('ko', 'Error de Inserción!! '));
@@ -1203,16 +1207,17 @@ class FormulaController extends BaseController {
                         'filasDeMas' => $filasDeMas
             ));
         } else {
-            if (Input::has('id')) {
+            if ($updating) {
                 $formula = Formula::find(Input::get('id'));
-                //$idPedido=Input::has('id');
+                $isDetallesUpdated = $this->isDetallesUpdated($formula, $numbered_rows);
             } else {
                 $formula = new Formula();
                 $formula->fecha = time();
                 $formula->numero = $this->lastFormulaId();
+                $formula->fechaUltEdicion = time();
                 //dame($lastFor,1);
             } //var_dump(strtotime(swip_date_us_eu(Input::get('fecha')))); exit;
-            $formula->fechaUltEdicion = time();
+
             $formula->idSeccionFormula = 8;
             $formula->nombre = Input::get('nombre');
             $formula->descripcion = Input::get('descripcion');
@@ -1221,8 +1226,12 @@ class FormulaController extends BaseController {
             $formula->codigo = Input::get('codigo');
             $formula->esBase = 1;
             if ($formula->save()) {
-                if (Input::has('id')) {
-                    $formula->formulasDetalle()->delete();
+                if ($updating) {
+                    if ($isDetallesUpdated) {
+                        $formula->formulasDetalle()->delete();
+                        $formula->fechaUltEdicion = time();
+                        $formula->save();
+                    }
                     $formula->formulasEquivalencia()->delete();
                 }
                 for ($i = 1; $i < 6; $i++) {
@@ -1236,26 +1245,31 @@ class FormulaController extends BaseController {
                         $equivalencia->save();
                     }
                 }
-                foreach ($numbered_rows as $n) {
-                    //$n = $i + 1;
-                    $cant_trim = trim(Input::get('det-cantidad-' . $n));
-                    $cant_producto = trim(Input::get('det-producto-' . $n));
-                    $esColor = trim(Input::get('det-color-' . $n));
-                    if (($cant_trim == '' || $cant_producto == '0'))
-                        continue;
-                    $formulasDetalle = new FormulasDetalle();
-                    $formulasDetalle->cantidad = Input::get('det-cantidad-' . $n);
-                    $formulasDetalle->idProducto = Input::get('det-producto-' . $n);
-                    if (!$esColor) {
-                        $formulasDetalle->esColor = 0;
-                    } else {
-                        $formulasDetalle->esColor = 1;
+
+
+                //SAVE DETALLES
+                if ($isDetallesUpdated || !$updating) {
+                    foreach ($numbered_rows as $n) {
+                        //$n = $i + 1;
+                        $cant_trim = trim(Input::get('det-cantidad-' . $n));
+                        $cant_producto = trim(Input::get('det-producto-' . $n));
+                        $esColor = trim(Input::get('det-color-' . $n));
+                        if (($cant_trim == '' || $cant_producto == '0'))
+                            continue;
+                        $formulasDetalle = new FormulasDetalle();
+                        $formulasDetalle->cantidad = Input::get('det-cantidad-' . $n);
+                        $formulasDetalle->idProducto = Input::get('det-producto-' . $n);
+                        if (!$esColor) {
+                            $formulasDetalle->esColor = 0;
+                        } else {
+                            $formulasDetalle->esColor = 1;
+                        }
+                        $formulasDetalle->idFormula = $formula->id;
+                        //dame($formulasDetalle,1);
+                        $formulasDetalle->save();
+                        $formulasDetalle->orden = $formulasDetalle->id;
+                        $formulasDetalle->save();
                     }
-                    $formulasDetalle->idFormula = $formula->id;
-                    //dame($formulasDetalle,1);
-                    $formulasDetalle->save();
-                    $formulasDetalle->orden = $formulasDetalle->id;
-                    $formulasDetalle->save();
                 }
             } else {
                 return Redirect::to('formulas-base')->with('mensaje', $this->get_message('ko', 'Error de Inserción!! '));
@@ -1349,7 +1363,7 @@ class FormulaController extends BaseController {
                     'eqs' => FormulasEquivalencia::dropDown(),
                     'viejos' => $this->viejos,
                     'user_type' => Auth::user()->type,
-                    'formulaActive' => 'active',
+                    'sateActive' => 'active',
                     'base' => '1',
                     'url_base' => '-base',
                     'filter' => false
@@ -1639,8 +1653,10 @@ class FormulaController extends BaseController {
 //                        'formula' => $formula
 //            ));
         } else {
+            $isDetallesUpdated=false;
             if ($updating) {
                 $formula = Formula::find(Input::get('id_edit'));
+                $isDetallesUpdated = $this->isDetallesUpdated($formula, $numbered_rows);
 
                 //$idPedido=Input::has('id');
             } else {
@@ -1654,9 +1670,10 @@ class FormulaController extends BaseController {
                     $lastFor = $lastFor->numeroHija + 1;
                 }
                 $formula->numeroHija = $lastFor;
+                $formula->fechaUltEdicion = time();
                 //dame($lastFor,1);
             } //var_dump(strtotime(swip_date_us_eu(Input::get('fecha')))); exit;
-            $formula->fechaUltEdicion = time();
+
             $formula->idSeccionFormula = 10;
             $formula->nombre = Input::get('nombre');
             $formula->descripcion = Input::get('descripcion');
@@ -1667,7 +1684,11 @@ class FormulaController extends BaseController {
 
             if ($formula->save()) {
                 if ($updating) {
-                    $formula->formulasDetalle()->delete();
+                    if ($isDetallesUpdated) {
+                        $formula->formulasDetalle()->delete();
+                        $formula->fechaUltEdicion = time();
+                        $formulasDetalle->save();
+                    }
                     $formula->formulasEquivalencia()->delete();
                 }
                 for ($i = 1; $i < 6; $i++) {
@@ -1681,24 +1702,29 @@ class FormulaController extends BaseController {
                         $equivalencia->save();
                     }
                 }
+                
+                
+                
+                //SAVE DETALLES
+                if ($isDetallesUpdated || !$updating) {
+                    foreach ($numbered_rows as $n) {
+                        //$n = $i + 1;
+                        $cant_trim = floatVal(trim(Input::get('det-cantidad-' . $n)));
+                        $cant_producto = intVal(trim(Input::get('det-producto-' . $n)));
 
-                foreach ($numbered_rows as $n) {
-                    //$n = $i + 1;
-                    $cant_trim = floatVal(trim(Input::get('det-cantidad-' . $n)));
-                    $cant_producto = intVal(trim(Input::get('det-producto-' . $n)));
+                        if (($cant_trim == 0 || $cant_producto == 0))
+                            continue;
+                        $formulasDetalle = new FormulasDetalle();
+                        $formulasDetalle->cantidad = Input::get('det-cantidad-' . $n);
+                        $formulasDetalle->idProducto = Input::get('det-producto-' . $n);
+                        $formulasDetalle->esColor = 0;
+                        $formulasDetalle->idFormula = $formula->id;
 
-                    if (($cant_trim == 0 || $cant_producto == 0))
-                        continue;
-                    $formulasDetalle = new FormulasDetalle();
-                    $formulasDetalle->cantidad = Input::get('det-cantidad-' . $n);
-                    $formulasDetalle->idProducto = Input::get('det-producto-' . $n);
-                    $formulasDetalle->esColor = 0;
-                    $formulasDetalle->idFormula = $formula->id;
-
-                    //dame($formulasDetalle,1);
-                    $formulasDetalle->save();
-                    $formulasDetalle->orden = $formulasDetalle->id;
-                    $formulasDetalle->save();
+                        //dame($formulasDetalle,1);
+                        $formulasDetalle->save();
+                        $formulasDetalle->orden = $formulasDetalle->id;
+                        $formulasDetalle->save();
+                    }
                 }
             } else {
                 return Redirect::to('formulas-base')->with('mensaje', $this->get_message('ko', 'Error de Inserción!! '));
