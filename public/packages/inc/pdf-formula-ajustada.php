@@ -113,8 +113,7 @@ $html = '
 ';
 
 $esPinturas = formulaEsPinturas($formula->idSeccionFormula);
-$debug = false;
-;
+
 
 if (in_array($formula->idSeccionFormula, [3, 11, 5, 10, 8, 14, 15]))
     $html .= 'table.t-margin-left{margin-left:180px;}';
@@ -202,76 +201,120 @@ else
 
 /////////////////////TR 3////////////////////
 $html .= '<tr>';
+
+
+//70max chars row
 $codFormula = trim($formula->codigo);
 $numPintura = trim($formula->numero_pintura);
 $numFormula = trim($formula->numero);
+$fechaUltEdicion = trim($formula->fechaUltEdicion);
+$instrucciones = trim($formula->instrucciones);
+$fields = [
+    ['value' => $seccion, 'html' => '<small>Sección:</small> <span class="texto">' . $seccion . '</span>', 'code' => 'seccion', 'strlen' => strlen('Sección: ' . $seccion)],
+    ['value' => $codFormula, 'html' => '<small>Cód. fórmula:</small> <span class="texto">' . $codFormula . '</span>', 'code' => 'codeFormula', 'strlen' => strlen('Cód. fórmula: ' . $codFormula)],
+    ['value' => $numPintura, 'html' => '<small>Núm. pintura:</small> <span class="texto">' . $numPintura . '</span>', 'code' => 'numPintura', 'strlen' => strlen('Núm. pintura:' . $numPintura)],
+    ['value' => $numFormula, 'html' => '<span class="texto" style="color:red;">NF' . $numFormula . '</span>', 'code' => 'numFormula', 'strlen' => strlen('NF' . $numFormula)],
+    ['value' => $fechaUltEdicion, 'html' => '<span class="texto">' . $fechaUltEdicion . '</span>', 'code' => 'fechaUltEdicion', 'strlen' => strlen($fechaUltEdicion)],
+    ['value' => $instrucciones, 'html' => '<small>IT.:</small> <span class="texto">' . $instrucciones . '</span>', 'code' => 'instrucciones', 'strlen' => strlen('IT.: ' . $instrucciones)]
+];
 
-
-
-$colspan = '';
-if (!$codFormula) {
-    $colspan = ' colspan="2"';
-} elseif (!$esPinturas && !$formula->numero) {
-    $colspan = ' colspan="2"';
-}
-
-if (!$esPinturas && !$formula->numero && !$codFormula) {
-    $colspan = ' colspan="3"';
-}
-
-$html .= '<td ' . $colspan . '>';
-$html .= '<small>Sección:</small> <span class="texto">' . $seccion . '</span>';
-$html .= '</td>';
-
-
-
-if ($codFormula) {
-    $html .= '<td>';
-    $html .= ' <small>Cód. fórmula:</small><span class="texto">' . $codFormula . '</span>';
-    $html .= '</td>';
-}
-
-if ($esPinturas && $numPintura) {
-    $html .= '<td>';
-    $html .= ' <small>Núm. pintura:</small> <span class="texto">' . $formula->numero_pintura . '</span>';
-    $html .= '</td>';
-}
-
-if ($formula->numero && $numFormula) {
-    $html .= '<td>';
-    $html .= ' <span class="texto" style="color:red;">NF' . $formula->numero . '</span>';
-    $html .= '</td>';
-}
-
-
-
-$html .= '<td>';
-$html .= '<span class="texto">' . $formula->fechaUltEdicion . '</span>';
-$html .= '</td>';
-
-$html .= '</tr>';
-
-
-
-
-
-
-
-
-
-
-/////////////////////TR 4////////////////////
+$totalCols = 5;
+$maxCharsRow = 50;
+$charsCell = $maxCharsRow / $totalCols;
+$colsCount = 0;
 $html .= '<tr>';
-if ($formula->instrucciones != '') {
-    $html .= '<td colspan="5"><small>IT.:</small> <span class="texto">';
-    $html .= $formula->instrucciones;
-    $html .= '</span></td>';
+foreach ($fields as $field) {
+    if ($field['value']) {
+        //if($colsCount>)
+        $colspan = round($field['strlen'] / $charsCell);
+        if ($colspan > 5)
+            $colspan = 5;
+        if ($colspan < 1)
+            $colspan = 1;
+
+        $leftCols = (5 - $colsCount);
+
+        if ($colspan > $leftCols) {
+            $html .= '</tr><tr>';
+            $colsCount = 0;
+        }
+        $colsCount += $colspan;
+
+        $html .= '<td colspan="' . $colspan . '">' . $field['html'] . '</td>';
+    }
 }
+if ($colsCount < 5)
+    $html .= '<td colspan="' . (5 - $colsCount) . '"></td>';
+
 $html .= '</tr></tbody></table>';
+$debug = false;
+
+
+/*
+  $colspan = '';
+  if (!$codFormula) {
+  $colspan = ' colspan="2"';
+  } elseif (!$esPinturas && !$formula->numero) {
+  $colspan = ' colspan="2"';
+  }
+
+  if (!$esPinturas && !$formula->numero && !$codFormula) {
+  $colspan = ' colspan="3"';
+  }
+
+  $html .= '<td ' . $colspan . '>';
+  $html .= '<small>Sección:</small> <span class="texto">' . $seccion . '</span>';
+  $html .= '</td>';
+
+
+
+  if ($codFormula) {
+  $html .= '<td>';
+  $html .= ' <small>Cód. fórmula:</small><span class="texto">' . $codFormula . '</span>';
+  $html .= '</td>';
+  }
+
+  if ($esPinturas && $numPintura) {
+  $html .= '<td>';
+  $html .= ' <small>Núm. pintura:</small> <span class="texto">' . $formula->numero_pintura . '</span>';
+  $html .= '</td>';
+  }
+
+  if ($formula->numero && $numFormula) {
+  $html .= '<td>';
+  $html .= ' <span class="texto" style="color:red;">NF' . $formula->numero . '</span>';
+  $html .= '</td>';
+  }
+
+
+
+  $html .= '<td>';
+  $html .= '<span class="texto">' . $formula->fechaUltEdicion . '</span>';
+  $html .= '</td>';
+
+  $html .= '</tr>';
 
 
 
 
+
+
+
+
+
+
+  /////////////////////TR 4////////////////////
+  $html .= '<tr>';
+  if ($formula->instrucciones != '') {
+  $html .= '<td colspan="5"><small>IT.:</small> <span class="texto">';
+  $html .= $formula->instrucciones;
+  $html .= '</span></td>';
+  }
+  $html .= '</tr></tbody></table>';
+
+
+
+ */
 
 
 
