@@ -113,7 +113,8 @@ $html = '
 ';
 
 $esPinturas = formulaEsPinturas($formula->idSeccionFormula);
-
+$debug = false;
+;
 
 if (in_array($formula->idSeccionFormula, [3, 11, 5, 10, 8, 14, 15]))
     $html .= 'table.t-margin-left{margin-left:180px;}';
@@ -162,15 +163,15 @@ foreach ($formula->FormulasEquivalencia as $eq) {
 
 if (!$esPinturas) {
     $equiv = $equiv ?: $formula->nombre;
-    $nombre = '<td colspan="4" style="width:100%;"><span class="texto" style="font-size:12px;">' . $equiv . '</span>	</td>';
+    $nombre = '<td colspan="4" style="width:100%;border-left:none;border-right:none;"><span class="texto" style="font-size:12px;">' . $equiv . '</span>	</td>';
 } else {
     $equivsOut = '<div>' . $equivs . '</div>';
-    $nombre = '<td colspan="4" style="width:100%;font-size:12px;"><span style="font-size:12px;" class="texto">' . $formula->nombre . '</span>' . $equivsOut . '</td>';
+    $nombre = '<td colspan="4" style="width:100%;font-size:12px;border-left:none;border-right:none;"><span style="font-size:12px;" class="texto">' . $formula->nombre . '</span>' . $equivsOut . '</td>';
 }
 
 //$debug = true;
 ///////////////ENCABEZADO FORMULA////////////////////////////////
-$html .= '<table id="encabezado-detalles" style="background-color:rgba(223,223,223,0.5);margin-top:0px;widh:100%;">
+$html .= '<table id="encabezado-detalles" style="background-color:rgba(223,223,223,0.5);margin-top:0px;widh:100%;border-right:solid thin #aeaeae;">
                         <tbody>';
 
 
@@ -179,7 +180,7 @@ $html .= '<table id="encabezado-detalles" style="background-color:rgba(223,223,2
 
 /////////////////////TR 1////////////////////
 $html .= '<tr>
-                                <td rowspan="2" style="background:white; width:10%"><img class="body" src="/img/logo_color.jpg" style="width: 40px; margin-right:2px;margin-left:2px;" /></td>
+                                <td colspan="1" rowspan="2" style="background:white; width:10%"><img class="body" src="/img/logo_color.jpg" style="width: 40px; margin-right:2px;margin-left:2px;" /></td>
                                     ' . $nombre . '
                                 </tr>';
 
@@ -201,98 +202,42 @@ else
 
 /////////////////////TR 3////////////////////
 $html .= '<tr>';
-
-
-//70max chars row
 $codFormula = trim($formula->codigo);
 $numPintura = trim($formula->numero_pintura);
 $numFormula = trim($formula->numero);
 $fechaUltEdicion = trim($formula->fechaUltEdicion);
 $instrucciones = trim($formula->instrucciones);
-$fields = [
-    ['value' => $seccion, 'html' => '<small>Sección:</small> <span class="texto">' . $seccion . '</span>', 'code' => 'seccion', 'strlen' => strlen('Sección: ' . $seccion)],
-    ['value' => $codFormula, 'html' => '<small>Cód. fórmula:</small> <span class="texto">' . $codFormula . '</span>', 'code' => 'codeFormula', 'strlen' => strlen('Cód. fórmula: ' . $codFormula)],
-    ['value' => $numPintura, 'html' => '<small>Núm. pintura:</small> <span class="texto">' . $numPintura . '</span>', 'code' => 'numPintura', 'strlen' => strlen('Núm. pintura:' . $numPintura)],
-    ['value' => $numFormula, 'html' => '<span class="texto" style="color:red;">NF' . $numFormula . '</span>', 'code' => 'numFormula', 'strlen' => strlen('NF' . $numFormula)],
-    ['value' => $fechaUltEdicion, 'html' => '<span class="texto">' . $fechaUltEdicion . '</span>', 'code' => 'fechaUltEdicion', 'strlen' => strlen($fechaUltEdicion)],
-    ['value' => $instrucciones, 'html' => '<small>IT.:</small> <span class="texto">' . $instrucciones . '</span>', 'code' => 'instrucciones', 'strlen' => strlen('IT.: ' . $instrucciones)]
-];
 
-$totalCols = 5;
-$maxCharsRow = 50;
-$charsCell = $maxCharsRow / $totalCols;
-$colsCount = 0;
-$html .= '<tr>';
-foreach ($fields as $field) {
-    if ($field['value']) {
-        //if($colsCount>)
-        $colspan = round($field['strlen'] / $charsCell);
-        if ($colspan > 5)
-            $colspan = 5;
-        if ($colspan < 1)
-            $colspan = 1;
 
-        $leftCols = (5 - $colsCount);
 
-        if ($colspan > $leftCols) {
-            $html .= '</tr><tr>';
-            $colsCount = 0;
-        }
-        $colsCount += $colspan;
 
-        $html .= '<td colspan="' . $colspan . '">' . $field['html'] . '</td>';
-    }
+
+$html .= '<td colspan="5" style="padding:0 3px;border-right:none;">';
+
+
+$html .= '<small>Sección:</small> <span class="texto">' . $seccion . '</span><span style="font-size:20px;color:#aeaeae;border-right:solid thin #aeaeae;">&nbsp;</span> ';
+
+if ($codFormula) {
+    $html .= '<small>Cód. fórmula:</small><span class="texto">' . $codFormula . '</span><span style="font-size:20px;color:#aeaeae;border-right:solid thin #aeaeae;">&nbsp;</span> ';
 }
-if ($colsCount < 5)
-    $html .= '<td colspan="' . (5 - $colsCount) . '"></td>';
 
-$html .= '</tr></tbody></table>';
-$debug = false;
+if ($esPinturas && $numPintura) {
+    $html .= '<small>Núm. pintura:</small> <span class="texto">' . $numPintura . '</span><span style="font-size:20px;color:#aeaeae;border-right:solid thin #aeaeae;">&nbsp;</span> ';
+}
 
+if ($numFormula) {
+    $html .= '<span class="texto" style="color:red;">NF' . $numFormula . '</span><span style="font-size:20px;color:#aeaeae;border-right:solid thin #aeaeae;">&nbsp;</span> ';
+}
 
-/*
-  $colspan = '';
-  if (!$codFormula) {
-  $colspan = ' colspan="2"';
-  } elseif (!$esPinturas && !$formula->numero) {
-  $colspan = ' colspan="2"';
-  }
+$html .= '<span class="texto">' . $fechaUltEdicion . '</span><span style="font-size:20px;color:#aeaeae;border-right:solid thin #aeaeae;">&nbsp;</span> ';
 
-  if (!$esPinturas && !$formula->numero && !$codFormula) {
-  $colspan = ' colspan="3"';
-  }
+if ($instrucciones) {
+    $html .= '<small>IT.:</small><span class="texto">'.$instrucciones.'</span>';
+}
 
-  $html .= '<td ' . $colspan . '>';
-  $html .= '<small>Sección:</small> <span class="texto">' . $seccion . '</span>';
-  $html .= '</td>';
+$html .= '</td>';
 
-
-
-  if ($codFormula) {
-  $html .= '<td>';
-  $html .= ' <small>Cód. fórmula:</small><span class="texto">' . $codFormula . '</span>';
-  $html .= '</td>';
-  }
-
-  if ($esPinturas && $numPintura) {
-  $html .= '<td>';
-  $html .= ' <small>Núm. pintura:</small> <span class="texto">' . $formula->numero_pintura . '</span>';
-  $html .= '</td>';
-  }
-
-  if ($formula->numero && $numFormula) {
-  $html .= '<td>';
-  $html .= ' <span class="texto" style="color:red;">NF' . $formula->numero . '</span>';
-  $html .= '</td>';
-  }
-
-
-
-  $html .= '<td>';
-  $html .= '<span class="texto">' . $formula->fechaUltEdicion . '</span>';
-  $html .= '</td>';
-
-  $html .= '</tr>';
+$html .= '</tr>';
 
 
 
@@ -303,18 +248,11 @@ $debug = false;
 
 
 
-  /////////////////////TR 4////////////////////
-  $html .= '<tr>';
-  if ($formula->instrucciones != '') {
-  $html .= '<td colspan="5"><small>IT.:</small> <span class="texto">';
-  $html .= $formula->instrucciones;
-  $html .= '</span></td>';
-  }
-  $html .= '</tr></tbody></table>';
 
 
 
- */
+$html .= '</tbody></table>';
+
 
 
 
@@ -359,7 +297,7 @@ $html .= '<tr>
                     
                     </body></html>';
 
-if ($debug) {
+if (false) {
     echo $html;
     exit;
 }
