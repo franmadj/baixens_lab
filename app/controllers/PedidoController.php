@@ -2,11 +2,11 @@
 
 class PedidoController extends BaseController {
 
-    var $viejos = array('proveedor' => '0', 'fechaDe' => '', 'fechaA' => '', 'fechaDeE' => '', 'fechaAE' => '', 'estadoPedidos' => '0');
-    
+    var $viejos = array('proveedor' => '0', 'fechaDe' => '', 'fechaA' => '', 'fechaDeE' => '', 'fechaAE' => '', 'estadoPedidos' => '0', 'pedidosNumeros' => '0');
+
     function __construct() {
         parent::__construct();
-        $this->checkUserAccess([1,2]);
+        $this->checkUserAccess([1, 2]);
     }
 
     private function get_pedido($id) {
@@ -20,55 +20,77 @@ class PedidoController extends BaseController {
     }
 
     public function listPedidos() {
-        $pedidos = Pedido::orderBy('id', 'desc')->take(20)->get();
+        if (Input::has('page') && Input::has('filter') && Session::get('filter_pedidos')) {
+            return $this->post_index(Session::get('filter_pedidos'));
+        }
+        $pedidos = Pedido::orderBy('id', 'desc')->paginate(20);
 //        dame('$pedidos');
 //
 //
-        return View::make('pedidos/pedidos-list', array('pedidos' => $pedidos, 'proveedores' => Proveedor::dropDown(), 'viejos' => $this->viejos, 'pedidoActive' => 'start active'));
+        return View::make('pedidos/pedidos-list', array(
+            'pedidos' => $pedidos, 
+            'proveedores' => Proveedor::dropDown(), 
+            'pedidosNumeros' => Pedido::dropDown(), 
+            'viejos' => $this->viejos, 
+            'pedidoActive' => 'start active',
+            'filter' => false
+            ));
     }
 
-    public function post_index() {
+    public function post_index($filterPaginated = false) {
+        $input = $filterPaginated ? $filterPaginated : Input::all();
+        //dd($input);
+        
+        if (isset($input['filtrar'])) {
+            if (!$filterPaginated)
+                Session::put('filter_pedidos', Input::all());
+        }
 
-        if (Input::has('proveedores')) {
+        if (isset($input['proveedores'])) {
             $pedidos = new Pedido();
             $filtra = false;
-            if (Input::get('proveedores') != '0') {
-                $pedidos = $pedidos->where('idProveedor', Input::get('proveedores'));
+            if ($input['proveedores'] != '0') {
+                $pedidos = $pedidos->where('idProveedor', $input['proveedores']);
                 $filtra = true;
-                $this->viejos['proveedor'] = Input::get('proveedores');
+                $this->viejos['proveedor'] = $input['proveedores'];
             }
 
-            if (Input::get('estadoPedidos') != '0') {//echo Input::get('estadoPedidos');exit;
-                $pedidos = $pedidos->where('estadoPedido', trim(Input::get('estadoPedidos')));
+            if ($input['estadoPedidos'] != '0') {//echo Input::get('estadoPedidos');exit;
+                $pedidos = $pedidos->where('estadoPedido', trim($input['estadoPedidos']));
                 $filtra = true;
-                $this->viejos['estadoPedidos'] = Input::get('estadoPedidos');
+                $this->viejos['estadoPedidos'] = $input['estadoPedidos'];
             }
-            if (date_validate(Input::get('fechaDe')) && date_validate(Input::get('fechaA'))) {//exit;
+            if ($input['pedidosNumeros'] != '0') {//echo Input::get('estadoPedidos');exit;
+                $pedidos = $pedidos->where('id', trim($input['pedidosNumeros']));
+                $filtra = true;
+                $this->viejos['pedidosNumeros'] = $input['pedidosNumeros'];
+            }
+            if (date_validate($input['fechaDe']) && date_validate($input['fechaA'])) {//exit;
                 $pedidos = $pedidos->whereBetween('fecha', array(
-                    strtotime(swip_date_us_eu(Input::get('fechaDe'))),
-                    strtotime(swip_date_us_eu(Input::get('fechaA')))));
+                    strtotime(swip_date_us_eu($input['fechaDe'])),
+                    strtotime(swip_date_us_eu($input['fechaA']))));
 
                 $filtra = true;
-                $this->viejos['fechaDe'] = Input::get('fechaDe');
-                $this->viejos['fechaA'] = Input::get('fechaA');
+                $this->viejos['fechaDe'] = $input['fechaDe'];
+                $this->viejos['fechaA'] = $input['fechaA'];
             }
-            
-            if (date_validate(Input::get('fechaDeE')) && date_validate(Input::get('fechaAE'))) {//exit;
+
+            if (date_validate($input['fechaDeE']) && date_validate($input['fechaAE'])) {//exit;
                 $pedidos = $pedidos->whereBetween('plazoEntrega', array(
-                    strtotime(swip_date_us_eu(Input::get('fechaDeE'))),
-                    strtotime(swip_date_us_eu(Input::get('fechaAE')))));
+                    strtotime(swip_date_us_eu($input['fechaDeE'])),
+                    strtotime(swip_date_us_eu($input['fechaAE']))));
 
                 $filtra = true;
-                $this->viejos['fechaDeE'] = Input::get('fechaDeE');
-                $this->viejos['fechaAE'] = Input::get('fechaAE');
+                $this->viejos['fechaDeE'] = $input['fechaDeE'];
+                $this->viejos['fechaAE'] = $input['fechaAE'];
             }
-            
-            
-            
+
+
+
             if ($filtra) {
-                $pedidos = $pedidos->get();
+                $pedidos = $pedidos->paginate(50);
             } else {
-                $pedidos = Pedido::all();
+                $pedidos = $pedidos->paginate(50);
             }
         } else {
             $pedidos = Pedido::all();
@@ -81,7 +103,7 @@ class PedidoController extends BaseController {
             foreach ($pedidos as $pedido) {
                 foreach ($pedido->pedidosDetalle as $pd) {
                     if (!array_key_exists($pd->idProducto, $all_products)) {
-                        $all_products[$pd->idProducto] = isset($pd->Producto->nombreProducto)?$pd->Producto->nombreProducto:'';
+                        $all_products[$pd->idProducto] = isset($pd->Producto->nombreProducto) ? $pd->Producto->nombreProducto : '';
                     }
                 }
             }
@@ -105,8 +127,8 @@ class PedidoController extends BaseController {
                                 $tot_coste_prod[$pd->idFormatoPedido] = 0;
                                 $tot_cant_prod[$pd->idFormatoPedido] = 0;
                             }
-                            $tot_coste_prod[$pd->idFormatoPedido]+=$pd->Producto->coste;
-                            $tot_cant_prod[$pd->idFormatoPedido]+=$pd->cantidad;
+                            $tot_coste_prod[$pd->idFormatoPedido] += $pd->Producto->coste;
+                            $tot_cant_prod[$pd->idFormatoPedido] += $pd->cantidad;
                         }
                     }
                 }
@@ -134,13 +156,13 @@ class PedidoController extends BaseController {
             $objPHPExcel->getActiveSheet()->getColumnDimension('d')->setAutoSize(true);
             $objPHPExcel->getActiveSheet()->getColumnDimension('e')->setAutoSize(true);
             $idSeccion = '';
-            $n =  0;
-            $row =50;
+            $n = 0;
+            $row = 50;
             foreach ($reult as $re) {
                 if ($row >= 50) {
                     $row = 0;
                     $n++;
-                    
+
 
 
                     $objPHPExcel->getActiveSheet()->SetCellValue('a' . $n, 'Prveedor');
@@ -148,11 +170,9 @@ class PedidoController extends BaseController {
                     $objPHPExcel->getActiveSheet()->SetCellValue('c' . $n, 'Formato');
                     $objPHPExcel->getActiveSheet()->SetCellValue('d' . $n, 'Cantidad');
                     //$objPHPExcel->getActiveSheet()->getColumnDimension('b')->setAutoSize(true);
-                    if(Input::has('excel_valorado'))
+                    if (Input::has('excel_valorado'))
                         $objPHPExcel->getActiveSheet()->SetCellValue('e' . $n, 'Coste');
                     //$objPHPExcel->getActiveSheet()->getColumnDimension('c')->setAutoSize(true);
-
-
                 }
                 $row++;
 
@@ -161,24 +181,30 @@ class PedidoController extends BaseController {
                 $objPHPExcel->getActiveSheet()->SetCellValue('b' . $n, $re['producto']);
                 $objPHPExcel->getActiveSheet()->SetCellValue('c' . $n, $re['formato']);
                 $objPHPExcel->getActiveSheet()->SetCellValue('d' . $n, $re['cantidad']);
-                if(Input::has('excel_valorado'))
+                if (Input::has('excel_valorado'))
                     $objPHPExcel->getActiveSheet()->SetCellValue('e' . $n, $re['coste']);
-
             }
 
             $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-			$file=public_path().'\files\excel.xlsx';
-			if(file_exists($file)){
-				chmod($file,0644);
-			}
-				
+            $file = public_path() . '\files\excel.xlsx';
+            if (file_exists($file)) {
+                chmod($file, 0644);
+            }
+
             $objWriter->save($file);
-			if(file_exists($file))
-				chmod($file,0644);
+            if (file_exists($file))
+                chmod($file, 0644);
             header('location: ' . URL::to('/') . '/files/excel.xlsx');
             exit();
         } else {
-            return View::make('pedidos/pedidos-list', array('pedidos' => $pedidos, 'proveedores' => Proveedor::dropDown(), 'viejos' => $this->viejos, 'pedidoActive' => 'start active'));
+            return View::make('pedidos/pedidos-list', array(
+                'pedidos' => $pedidos, 
+                'proveedores' => Proveedor::dropDown(), 
+                'pedidosNumeros' => Pedido::dropDown(), 
+                'viejos' => $this->viejos, 
+                'pedidoActive' => 'start active',
+                'filter' => true
+                ));
         }
     }
 
@@ -196,13 +222,13 @@ class PedidoController extends BaseController {
         //PLANTILLA
         Mail::send('pedidos.pedido-email', [], function($message) use ($email) {
             global $id;
-			
+
             $message->from($this->generalData['EMAIL'], 'Baixens');
             $message->to($this->generalData['EMAIL']);
             $message->to($email)->subject('Pedido');
-			//$message->to('info@jnacher.com');
+            //$message->to('info@jnacher.com');
             //$message->to('fmc03@hotmail.es')->subject('Pedido');
-			$destinationPath = '../public/files';
+            $destinationPath = '../public/files';
             $message->attach($destinationPath . '/filename.pdf', array(
                 //'as' => 'pdf-report.zip',
                 'mime' => 'application/pdf')
@@ -385,13 +411,13 @@ class PedidoController extends BaseController {
                 $pedido = new Pedido();
                 $pedido->idSolicitadoPor = Auth::id();
                 $lastPedido = DB::table('pedidos')->select('numero')->orderBy('id', 'desc')->first();
-				
+
                 if (!isset($lastPedido->numero)) {
                     $lastPedido = 1;
                 } else {
                     $lastPedido = $lastPedido->numero;
                 }
-                $pedido->numero = $lastPedido+1;
+                $pedido->numero = $lastPedido + 1;
             }//var_dump(strtotime(swip_date_us_eu(Input::get('fecha')))); exit;
             $pedido->fecha = strtotime(swip_date_us_eu(Input::get('fecha')));
             $pedido->envio = Input::get('envio');
@@ -450,22 +476,23 @@ class PedidoController extends BaseController {
     function create_pdf($save = false) {
         include(public_path() . "/packages/MPDF57/mpdf.php");
         $mpdf = new mPDF('utf-8', array(210, 297));
-		$mpdf = new mPDF('',    // mode - default
-		 '',    // format - A4, for example, default
-		 0,     // font size - default 0
-		 '',    // default font family
-		 0,    // margin_left
-		 0,    // margin right
-		 0,     // margin top
-		 16,    // margin bottom
-		 'P');  // L - landscape, P - portrait
+        $mpdf = new mPDF('', // mode - default
+                '', // format - A4, for example, default
+                0, // font size - default 0
+                '', // default font family
+                0, // margin_left
+                0, // margin right
+                0, // margin top
+                16, // margin bottom
+                'P');  // L - landscape, P - portrait
         $mpdf->SetDisplayMode('fullpage');
         $mpdf->list_indent_first_level = 0;  // 1 or 0 - whether to indent the first level of a list
         //$url=  str_replace('pdf', 'print', Request::url()); 
-		$slug='pdf';
-		if($save)$slug='email';
+        $slug = 'pdf';
+        if ($save)
+            $slug = 'email';
         $url = str_replace($slug, 'print', Request::url() . '/?user_img=' . $this->generalData['current_user']->img);
-		//dame($url,1);
+        //dame($url,1);
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);

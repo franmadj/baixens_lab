@@ -62,7 +62,11 @@
 
                             {{ Form::select('estadoPedidos', array(0=>'Selecciona Estado','pend'=>'Pendientes', 'rec'=>'Recibidos'), $viejos['estadoPedidos'],  array('class'=>'select2_category form-control', 'data-placeholder'=>'Selecciona Estado' )) }}
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
+
+                            {{ Form::select('pedidosNumeros', $pedidosNumeros, $viejos['pedidosNumeros'],  array('class'=>'select2_category form-control', 'data-placeholder'=>'Número pedido' )) }}
+                        </div>
+                        <div class="col-md-2">
                             <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" >
                                 <input name="fechaDe" type="text" class="form-control" readonly {{ ($viejos['fechaDe']!='')? 'value="'.$viejos['fechaDe'].'"': '' }}>
                                 <span class="input-group-btn">
@@ -73,7 +77,7 @@
                                 Inicio la fecha
                             </span>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" >
                                 <input name="fechaA" type="text" class="form-control" readonly {{ ($viejos['fechaA']!='')? 'value="'.$viejos['fechaA'].'"': '' }}>
                                 <span class="input-group-btn">
@@ -113,7 +117,7 @@
                         </div>
 
                         <div class="col-md-6" >
-                            <button type="submit" class="btn red btn-block">Filtrar</button>
+                            <button type="submit" class="btn red btn-block" name="filtrar" value="1">Filtrar</button>
                         </div>
 
                     </div>
@@ -130,6 +134,15 @@
                         </div>
                     </div>
                 </form>
+                
+                <?php
+                if ($pedidos) {
+                    if ($filter)
+                        echo $pedidos->appends(['filter' => '1'])->links();
+                    else
+                        echo $pedidos->links();
+                }
+                ?>
 
 
 
@@ -205,6 +218,14 @@
 
                     </tbody>
                 </table>
+                <?php
+                if ($pedidos) {
+                    if ($filter)
+                        echo $pedidos->appends(['filter' => '1'])->links();
+                    else
+                        echo $pedidos->links();
+                }
+                ?>
             </div>
         </div>
         <!-- END EXAMPLE TABLE PORTLET-->

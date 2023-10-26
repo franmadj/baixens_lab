@@ -33,7 +33,7 @@ class Pedido extends Eloquent {
         }
         
         public static function dropDown(){
-            $default      = array('0' => 'Pedidos');
+            $default      = array('0' => 'Número');
             $res  = Pedido::lists('numero', 'id');
             return $res  = $default + $res;
         }
