@@ -264,7 +264,8 @@ class BaseController extends Controller {
             $count++;
             $cantidad = Input::get('det-cantidad-' . $n);
             $idProducto = Input::get('det-producto-' . $n);
-            if (!$formula->formulasDetalle()->where('idProducto', $producto)->where('cantidad', $cantidad)->first()) {
+            $enlucido = Input::get('det-enlucido-' . $n);
+            if (!$formula->formulasDetalle()->where('idProducto', $producto)->where('cantidad', $cantidad)->where('enlucido', $enlucido)->first()) {
                 return true;
             }
         }
