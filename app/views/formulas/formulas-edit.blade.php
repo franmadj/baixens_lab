@@ -84,18 +84,34 @@ jQuery(document).ready(function ($) {
                 <h4>Editar formula Nº {{$formula->numero}}</h4>
 
 
-                <div class="col-md-12" style="padding:0px; margin-bottom:5px;">
-                    <div class="col-md-4" style="padding:0px;">
+                <div class="col-md-12 edit-formulas-print-pdf" style="">
+                    <div  style="padding:0px;">
                         <a target="_blank" href="{{URL::to('pdf-formula-valorada')}}/{{ $formula->id  }}/0" class="btn red fullButton enlaces_print">PDF formula valorada</a>
                     </div>
-                    <div class="col-md-4" >
+                    <div  >
                         <a target="_blank" href="{{URL::to('pdf-formula-sin-valorar')}}/{{ $formula->id  }}/0" class="btn red fullButton enlaces_print">PDF formula sin valorar</a>
                     </div>
-                    <div class="col-md-4" style="padding:0px;">
+                    <div  style="padding:0px;">
                         <a  target="_blank" href="{{URL::to('pdf-formula-ajustada')}}/{{ $formula->id  }}/0" class="btn red fullButton enlaces_print">PDF formula ajustada a producción</a>
                     </div>
+                    <div class="enlucido-fields-act" style="padding:0px;">
+                        <a  target="_blank" href="{{URL::to('pdf-formula-ajustada-dividida')}}/{{ $formula->id  }}/0" class="btn red fullButton enlaces_print">PDF formula ajustada a producción (dividida)</a>
+                    </div>
+
 
                 </div>
+                <style>
+                    .edit-formulas-print-pdf{
+                        padding:0px; margin-bottom:5px;display:flex;gap:2px;
+                    }
+                    .edit-formulas-print-pdf > div{
+                        flex-grow:1;
+                    }
+                    .enlucido-fields-act .radio{
+                        padding: 0;
+                        
+                    }
+                </style>
 
 
 
@@ -136,60 +152,60 @@ jQuery(document).ready(function ($) {
                     <input type="hidden" name="pendiente" value="1">
                     @endif
                     <div class="form-group">
-                        <label class="control-label col-md-2">Sección</label>
+                        <label class="control-label col-md-3">Sección</label>
                         <div class="col-md-4">
 
                             {{ Form::select('secciones', $secciones, $formula->idSeccionFormula,  array('class'=>'select2_category form-control', 'id'=>'secciones', 'tabindex'=>'1') ) }}
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="inputEmail1" class="col-md-2 control-label">NºFormula</label>
-                        <div class="col-md-10">
+                        <label for="inputEmail1" class="col-md-3 control-label">NºFormula</label>
+                        <div class="col-md-9">
                             <p class="form-control-static">
                                 Correlativo automático
                             </p>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="inputEmail1" class="col-md-2 control-label">Fecha de creación</label>
-                        <div class="col-md-10">
+                        <label for="inputEmail1" class="col-md-3 control-label">Fecha de creación</label>
+                        <div class="col-md-9">
                             <p class="form-control-static">
                                 {{$formula->fecha}}
                             </p>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="inputEmail1" class="col-md-2 control-label">Fecha útlima edición</label>
-                        <div class="col-md-10">
+                        <label for="inputEmail1" class="col-md-3 control-label">Fecha útlima edición</label>
+                        <div class="col-md-9">
                             <p class="form-control-static">
                                 {{$formula->fechaUltEdicion}}
                             </p>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="inputEmail1" class="col-md-2 control-label">Nombre formula</label>
-                        <div class="col-md-10">
+                        <label for="inputEmail1" class="col-md-3 control-label">Nombre formula</label>
+                        <div class="col-md-9">
                             <input tabindex="2" type="text" class="form-control" name="nombre"  {{ (Input::old('nombre')) ? 'value="'.Input::old('nombre').'"' : '' }}{{ isset($formula->nombre)? 'value="'.$formula->nombre.'"': ''  }} placeholder="Insertar nombre de formula">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="inputEmail1" class="col-md-2 control-label">Código formula</label>
-                        <div class="col-md-10">
+                        <label for="inputEmail1" class="col-md-3 control-label">Código formula</label>
+                        <div class="col-md-9">
                             <input tabindex="3" id="codigo" type="text" class="form-control"  name="codigo" {{ (Input::old('codigo')) ? 'value="'.Input::old('codigo').'"' : '' }}{{ isset($formula->codigo)? 'value="'.$formula->codigo.'"': ''  }} placeholder="Insertar codigo de formula">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="inputEmail1" class="col-md-2 control-label">Descripción</label>
-                        <div class="col-md-10">
+                        <label for="inputEmail1" class="col-md-3 control-label">Descripción</label>
+                        <div class="col-md-9">
                             <textarea tabindex="4" class="form-control" name="descripcion" rows="3">{{ isset($formula->descripcion)? $formula->descripcion : ''  }} </textarea>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                                <label class="control-label col-md-2">I.T.;</label>
-                                <div class="col-md-10">
+                                <label class="control-label col-md-3">I.T.;</label>
+                                <div class="col-md-9">
 
                                     <textarea name="instrucciones" class="form-control" tabindex="5">{{ isset($formula->instrucciones)? $formula->instrucciones : ''  }} </textarea>
                                 </div>
@@ -219,18 +235,18 @@ jQuery(document).ready(function ($) {
 
 
                     <div class="form-group">
-                        <label for="inputEmail1" class="col-md-2 control-label">Equivalencia formula</label>
+                        <label for="inputEmail1" class="col-md-3 control-label">Equivalencia formula</label>
                         <div class="col-md-4">
                             <input tabindex="5" type="text" class="form-control" name="equivalencia-1" {{ (Input::old('equivalencia-1')) ? 'value="'.Input::old('equivalencia-1').'"' : '' }}{{ isset($equivalencias['equivalencia1'])? 'value="'.$equivalencias['equivalencia1'].'"': ''  }}  placeholder="Equivalencia">
                         </div>
                         <div class="col-md-4">
                             <input type="text" tabindex="6" class="form-control" name="codigo-1"  {{ (Input::old('codigo-1')) ? 'value="'.Input::old('codigo-1').'"' : '' }}{{ isset($equivalencias['codigo1'])? 'value="'.$equivalencias['codigo1'].'"': ''  }}  placeholder="Código">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                         </div>
                     </div>
                     <div class="form-group">
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                         </div>
                         <div class="col-md-4">
                             <input tabindex="7" type="text" class="form-control" name="equivalencia-2"  {{ (Input::old('equivalencia-2')) ? 'value="'.Input::old('equivalencia-2').'"' : '' }}{{ isset($equivalencias['equivalencia2'])? 'value="'.$equivalencias['equivalencia2'].'"': ''  }}  placeholder="Equivalencia">
@@ -238,11 +254,11 @@ jQuery(document).ready(function ($) {
                         <div class="col-md-4">
                             <input tabindex="8" type="text" class="form-control" name="codigo-2"  {{ (Input::old('codigo-2')) ? 'value="'.Input::old('codigo-2').'"' : '' }}{{ isset($equivalencias['codigo2'])? 'value="'.$equivalencias['codigo2'].'"': ''  }}  placeholder="Código">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                         </div>
                     </div>
                     <div class="form-group">
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                         </div>
                         <div class="col-md-4">
                             <input tabindex="9" type="text" class="form-control" name="equivalencia-3"  {{ (Input::old('equivalencia-3')) ? 'value="'.Input::old('equivalencia-3').'"' : '' }}{{ isset($equivalencias['equivalencia3']) ? 'value="'.$equivalencias['equivalencia3'].'"': ''  }}  placeholder="Equivalencia">
@@ -250,11 +266,11 @@ jQuery(document).ready(function ($) {
                         <div class="col-md-4">
                             <input tabindex="10" type="text" class="form-control" name="codigo-3"  {{ (Input::old('codigo-3')) ? 'value="'.Input::old('codigo-3').'"' : '' }}{{ isset($equivalencias['codigo3'])? 'value="'.$equivalencias['codigo3'].'"': ''  }}  placeholder="Código">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                         </div>
                     </div>
                     <div class="form-group">
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                         </div>
                         <div class="col-md-4">
                             <input tabindex="11" type="text" class="form-control" name="equivalencia-4"  {{ (Input::old('equivalencia-4')) ? 'value="'.Input::old('equivalencia-4').'"' : '' }}{{ isset($equivalencias['equivalencia4'])? 'value="'.$equivalencias['equivalencia4'].'"': ''  }}  placeholder="Equivalencia">
@@ -262,11 +278,11 @@ jQuery(document).ready(function ($) {
                         <div class="col-md-4">
                             <input tabindex="12" type="text" class="form-control" name="codigo-4"  {{ (Input::old('codigo-4')) ? 'value="'.Input::old('codigo-4').'"' : '' }}{{ isset($equivalencias['codigo4'])? 'value="'.$equivalencias['codigo4'].'"': ''  }}  placeholder="Código">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                         </div>
                     </div>
                     <div class="form-group">
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                         </div>
                         <div class="col-md-4">
                             <input tabindex="13" type="text" class="form-control" name="equivalencia-5"  {{ (Input::old('equivalencia-5')) ? 'value="'.Input::old('equivalencia-5').'"' : '' }}{{ isset($equivalencias['equivalencia5'])? 'value="'.$equivalencias['equivalencia5'].'"': ''  }}  placeholder="Equivalencia">
@@ -274,32 +290,38 @@ jQuery(document).ready(function ($) {
                         <div class="col-md-4">
                             <input tabindex="14" type="text" class="form-control" name="codigo-5"  {{ (Input::old('codigo-5')) ? 'value="'.Input::old('codigo-5').'"' : '' }}{{ isset($equivalencias['codigo5'])? 'value="'.$equivalencias['codigo5'].'"': ''  }}  placeholder="Código">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="inputEmail1" class="col-md-2 control-label">Densidad (g/l)</label>
-                        <div class="col-md-10">
+                        <label for="inputEmail1" class="col-md-3 control-label">Densidad (g/l)</label>
+                        <div class="col-md-9">
                             <input tabindex="15" type="text" name="densidad" id="densidad-val"  {{ (Input::old('densidad')) ? 'value="'.trim(Input::old('densidad')).'"' : '' }}{{ isset($formula->densidad)? 'value="'.$formula->densidad.'"': ''  }} class="form-control"  placeholder="Insertar densidad (g/l)">
                         </div>
                     </div>
                     <div class="form-group enlucido-fields enlucido-fields-act">
-                        <label style="color:#F00;"  class="col-md-2 control-label">Código (BASE) Máquina Grande</label>
-                        <div class="col-md-10">
+                        <label style="color:#F00;"  class="col-md-3 control-label">Código (BASE) Máquina Grande <input style="padding:0;" type="radio" name="tipo-maquina" data-id="{{$formula->id}}" value="mg"></label>
+                        <div class="col-md-9">
                             <input tabindex="16" type="text" class="form-control" name="codigoBaseMg"  {{ (Input::old('codigoBaseMg')) ? 'value="'.trim(Input::old('codigoBaseMg')).'"' : '' }}{{ isset($formula->codigoBaseMg)? 'value="'.$formula->codigoBaseMg.'"': ''  }}  placeholder="Código (BASE) Máquina Grande">
                         </div>
                     </div>
                     <div class="form-group enlucido-fields enlucido-fields-act">
-                        <label style="color:#F00;"  class="col-md-2 control-label">Código (BASE) Máquina Pequeña</label>
-                        <div class="col-md-10">
+                        <label style="color:#F00;"  class="col-md-3 control-label">Código (BASE) Máquina Grande Bricolage <input type="radio" name="tipo-maquina" data-id="{{$formula->id}}" value="mgb"></label>
+                        <div class="col-md-9">
+                            <input tabindex="16" type="text" class="form-control" name="codigoBaseMgb"  {{ (Input::old('codigoBaseMgb')) ? 'value="'.trim(Input::old('codigoBaseMgb')).'"' : '' }}{{ isset($formula->codigoBaseMgb)? 'value="'.$formula->codigoBaseMgb.'"': ''  }}  placeholder="Código (BASE) Máquina Grande bricolage">
+                        </div>
+                    </div>
+                    <div class="form-group enlucido-fields enlucido-fields-act">
+                        <label style="color:#F00;"  class="col-md-3 control-label">Código (BASE) Máquina Pequeña <input type="radio" name="tipo-maquina" data-id="{{$formula->id}}" value="mp"></label>
+                        <div class="col-md-9">
                             <input tabindex="17" type="text" class="form-control" name="codigoBaseMp"  {{ (Input::old('codigoBaseMp')) ? 'value="'.trim(Input::old('codigoBaseMp')).'"' : '' }}{{ isset($formula->codigoBaseMp)? 'value="'.$formula->codigoBaseMp.'"': ''  }}  placeholder="Código (BASE) Máquina Pequeña">
                         </div>
                     </div>
 
 
                     <div class="form-group enlucido-fields enlucido-fields-act">
-                        <label style="color:#F00;" for="inputEmail1" class="col-md-2 control-label">Código (MA)</label>
-                        <div class="col-md-10">
+                        <label style="color:#F00;" for="inputEmail1" class="col-md-3 control-label">Código (MA)</label>
+                        <div class="col-md-9">
                             <input tabindex="18" type="text" class="form-control" name="codigoMa"  {{ (Input::old('codigoMa')) ? 'value="'.trim(Input::old('codigoMa')).'"' : '' }}{{ isset($formula->codigoMa)? 'value="'.$formula->codigoMa.'"': ''  }}  placeholder="Código (MA)">
                         </div>
                     </div>
@@ -775,6 +797,25 @@ jQuery(document).ready(function () {
                 "_token": '{{ Form::token() }}',
                 "id": $id,
                 "val": $val
+
+            },
+            success: function (data) {
+                //console.log(data);
+            },
+            dataType: 'json'
+        });
+    });
+    
+    $('input[name="tipo-maquina"]').click(function () {
+        var val = $(this).val();
+        var id = $(this).data('id')
+        $.ajax({
+            type: "POST",
+            url: "{{ URL::to('tipo-maquina-display') }}",
+            data: {
+                "_token": '{{ Form::token() }}',
+                "id": id,
+                "val": val
 
             },
             success: function (data) {

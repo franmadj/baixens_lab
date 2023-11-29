@@ -9,3 +9,5 @@ Thumbs.db
 /nbproject/
 composer-setup.php
 /public/files/*
+/public/packages/MPDF57
+/public/packages/MPDF57__

@@ -150,6 +150,7 @@ Route::group(array('before' => 'auth'), function() {
 
 
         Route::get('/pdf-formula-ajustada/{id}/{cant}', 'FormulaController@pdf_formula_ajustada');
+        Route::get('/pdf-formula-ajustada-dividida/{id}/{cant}', 'FormulaController@pdf_formula_ajustada_dividida');
         Route::get('/pdf-formula-valorada/{id}/{cant}', 'FormulaController@pdf_formula_valorada');
         Route::get('/pdf-formula-sin-valorar/{id}/{cant}', 'FormulaController@pdf_formula_sin_valorar');
 
@@ -257,6 +258,7 @@ Route::group(array('before' => 'auth'), function() {
     //AJAX
     Route::post('/equivalencia-display', 'FormulaController@ajax_set_equivalencia_display');
     Route::post('/check-base-has-child', 'FormulaController@check_base_has_child');
+    Route::post('/tipo-maquina-display', 'FormulaController@ajax_set_tipo_maquina_display');
 
 
 

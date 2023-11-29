@@ -823,7 +823,7 @@ class FormulaController extends BaseController {
                         'filasDeMas' => $filasDeMas
             ));
         } else {
-            $isDetallesUpdated=false;
+            $isDetallesUpdated = false;
             if ($updating) {
                 $formula = Formula::find(Input::get('id'));
 
@@ -852,6 +852,7 @@ class FormulaController extends BaseController {
             $formula->pendienteEdicion = '0';
             if ($enlucido) {
                 $formula->codigoBaseMg = Input::get('codigoBaseMg');
+                $formula->codigoBaseMgb = Input::get('codigoBaseMgb');
                 $formula->codigoBaseMp = Input::get('codigoBaseMp');
                 $formula->codigoMa = Input::get('codigoMa');
             }
@@ -1026,17 +1027,27 @@ class FormulaController extends BaseController {
         $this->print_pdf();
     }
 
-    public function pdf_formula_ajustada($id, $cantProduccion) {
+    public function pdf_formula_ajustada($id, $cantProduccion, $dividida = false) {
         $user_img = $this->get_user_img();
         $formula = Formula::find($id); //dame($formula->FormulasDetalle);
         if ($cantProduccion != 0) {
             $formula = $this->set_cantidad($formula, $cantProduccion);
         }
         $data = array(
-            'formula' => $formula, 'formulaActive' => 'active', 'user_img' => $user_img, 'logo_img' => 'logo_color.jpg',
+            'formula' => $formula, 
+            'formulaActive' => 'active', 
+            'user_img' => $user_img, 
+            'logo_img' => 'logo_color.jpg'
         );
-        require_once public_path() . "/packages/inc/pdf-formula-ajustada.php";
+        if ($dividida)
+            require_once public_path() . "/packages/inc/pdf-formula-ajustada-dividida.php";
+        else
+            require_once public_path() . "/packages/inc/pdf-formula-ajustada.php";
         //return View::make('formulas/impresiones/print-formula-ajustada', $data);
+    }
+
+    public function pdf_formula_ajustada_dividida($id, $cantProduccion) {
+        $this->pdf_formula_ajustada($id, $cantProduccion, true);
     }
 
     /* public function pdf_formula_ajustada($id, $cantProduccion) {
@@ -1046,6 +1057,16 @@ class FormulaController extends BaseController {
     public function ajax_set_equivalencia_display() {
         $res = DB::table('formulas_equivalencias')->where('id', Input::get('id'))->update(array(
             'display' => Input::get('val')
+        ));
+        $response = array(
+            'status' => $res
+        );
+        return Response::json($response);
+    }
+    
+    public function ajax_set_tipo_maquina_display() {
+        $res = DB::table('formulas')->where('id', Input::get('id'))->update(array(
+            'tipo_maquina_base' => Input::get('val')
         ));
         $response = array(
             'status' => $res
@@ -1653,7 +1674,7 @@ class FormulaController extends BaseController {
 //                        'formula' => $formula
 //            ));
         } else {
-            $isDetallesUpdated=false;
+            $isDetallesUpdated = false;
             if ($updating) {
                 $formula = Formula::find(Input::get('id_edit'));
                 $isDetallesUpdated = $this->isDetallesUpdated($formula, $numbered_rows);
@@ -1702,9 +1723,9 @@ class FormulaController extends BaseController {
                         $equivalencia->save();
                     }
                 }
-                
-                
-                
+
+
+
                 //SAVE DETALLES
                 if ($isDetallesUpdated || !$updating) {
                     foreach ($numbered_rows as $n) {
