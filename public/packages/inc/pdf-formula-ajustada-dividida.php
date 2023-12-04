@@ -373,7 +373,7 @@
                         $maquina = 'grande: ' . $formula->codigoBaseMg;
                         break;
                     case "mgb":
-                        $maquina = 'grande bricolage: ' . $formula->codigoBaseMgb;
+                        $maquina = 'grande bricolaje: ' . $formula->codigoBaseMgb;
                         break;
                     default:
                         $maquina = 'pequeña: ' . $formula->codigoBaseMp;

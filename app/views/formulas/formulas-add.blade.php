@@ -234,9 +234,9 @@ event.preventDefault();
                         </div>
                     </div>
                     <div class="form-group enlucido-fields enlucido-fields-act">
-                        <label style="color:#F00;"  class="col-md-2 control-label">Código (BASE) Máquina Grande Bricolage </label>
+                        <label style="color:#F00;"  class="col-md-2 control-label">Código (BASE) Máquina Grande Bricolaje </label>
                         <div class="col-md-10">
-                            <input tabindex="16" type="text" class="form-control" name="codigoBaseMgb"  {{ (Input::old('codigoBaseMgb')) ? 'value="'.trim(Input::old('codigoBaseMgb')).'"' : '' }}{{ isset($formula->codigoBaseMgb)? 'value="'.$formula->codigoBaseMgb.'"': ''  }}  placeholder="Código (BASE) Máquina Grande bricolage">
+                            <input tabindex="16" type="text" class="form-control" name="codigoBaseMgb"  {{ (Input::old('codigoBaseMgb')) ? 'value="'.trim(Input::old('codigoBaseMgb')).'"' : '' }}{{ isset($formula->codigoBaseMgb)? 'value="'.$formula->codigoBaseMgb.'"': ''  }}  placeholder="Código (BASE) Máquina Grande bricolaje">
                         </div>
                     </div>
                     <div class="form-group enlucido-fields enlucido-fields-act">
