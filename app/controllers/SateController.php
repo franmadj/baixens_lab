@@ -420,7 +420,7 @@ class SateController extends BaseController {
                     if ($isFormulasDetalleUpdate) {
                         $formula->formulasDetalle()->delete();
                         $formula->fechaUltEdicion = time();
-                        $formulasDetalle->save();
+                        $formula->save();
                     }
                 }
 
