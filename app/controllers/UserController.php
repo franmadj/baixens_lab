@@ -156,6 +156,9 @@ class UserController extends BaseController {
                     if ($user->type == 3) {
                         return Redirect::to('/formulas-base');
                     }
+                    if ($user->type == 5) {
+                        return Redirect::to('/formulas-comercial');
+                    }
                     return Redirect::to('/');
                 } else {
                     //dame(Request::getClientIp());exit;
