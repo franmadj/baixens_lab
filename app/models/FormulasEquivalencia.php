@@ -16,6 +16,12 @@ class FormulasEquivalencia extends Eloquent {
             $res  = FormulasEquivalencia::lists('equivalencia', 'id');
             return $res  = $default + $res;
         }
+        
+        public static function listItems(){
+            
+            $res  = FormulasEquivalencia::select('equivalencia','codigo', 'id')->get();
+            return $res;
+        }
 
 	
 

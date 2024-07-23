@@ -10,9 +10,7 @@
         </h3>
         <ul class="page-breadcrumb breadcrumb">
             <li class="btn-group">
-                <a  href="{{URL::to('add-formula')}}" class="btn blue">
-                    <span> Añadir formulas </span>
-                </a>
+                
             </li>
             <li>
                 <a href="inicio.html">
@@ -51,7 +49,7 @@
 
             <div class="portlet-body">
 
-                <form action="{{ URL::to('formulas') }}{{$url_base}}" method="post" class="form-horizontal col-md-12" role="form" style="padding:0px; margin-bottom:20px;">
+                <form action="{{ URL::to('formulas-comercial') }}{{$url_base}}" method="post" class="form-horizontal col-md-12" role="form" style="padding:0px; margin-bottom:20px;">
                     <input type="hidden" value="{{$base}}" name="esBase" id="esBase"/>
                     {{ Form::token() }}
                     <div class="col-md-1"  style="padding:0px;">
@@ -95,14 +93,7 @@
                     </div>
 
 
-                    <div class="col-md-6"  style="padding-left:0px; margin-bottom:20px;">
-                        <button type="submit" formtarget="_blank" name="imprimir" value="1" class="btn red btn-block">Imprimir</button>
-                        <!--                                         <a  target="_blank" href="{{URL::to('print-formulas')}}" class="btn red btn-block">Imprimir</a>-->
-                    </div>
-                    <div class="col-md-6"  style="padding-right:0px; margin-bottom:20px;">
-                        <button  type="submit" target="_blank" name="excel" value="1" class="btn green btn-block">Exportar Excel</button>
-
-                    </div>
+                    
                 </form>
 
                 <?php
@@ -129,32 +120,14 @@
                                 Sección
                             </th>
 
-                            <th class="hidden-xs">
-                                Ver Popup
-                            </th>
-
-<!--                                <th class="hidden-xs">
+                                <th class="hidden-xs">
                                          Ver
-                                </th>-->
+                                </th>
 
 
-                            @if($user_type==3)
-                            <th class="hidden-xs">
-                                Ver
-                            </th>
-
-                            @endif
 
 
-                            @if($user_type==1)
-                            <th class="hidden-xs">
-                                Editar/Ver
-                            </th>
-                            <th class="hidden-xs">
-                                Borrar
-                            </th>
-
-                            @endif
+                            
                         </tr>
                     </thead>
                     <tbody>
@@ -194,22 +167,12 @@
                                      margin-bottom: -3px;"></div>
                                 {{ $formula->seccion_name }}  
                             </td>
+                    
+
                             <td>
-                                <a class="btn btn-success btn-xs fullButton ver-popup" data-id="{{ $id_formula }}" href="#">Ver popup</a>
+                                <a class="btn btn-info btn-xs fullButton" href="{{ URL::to('edit-formula-comercial') }}/{{ $id_formula }}">Ver</a>
                             </td>
-                            @if($base==0)
-<!--                                    <td>
-                                 <a class="btn btn-success btn-xs fullButton"  href="{{ URL::to('ver-formula') }}/{{ $id_formula }}">Ver</a>
-                            </td>-->
-                            @endif
-                            <td>
-                                <a class="btn btn-info btn-xs fullButton" href="{{ URL::to('edit-formula'.$link_hija_base) }}/{{ $id_formula }}/edicion">@if($user_type==1) Editar/ @endif Ver</a>
-                            </td>
-                            <td>
-                                @if($user_type==1)
-                                <a  class="btn btn-danger btn-xs fullButton {{$del_class}}" data-id="{{$formula->id}}" href="{{ URL::to('borrar-formula'.$link_hija_base) }}/{{ $id_formula }}">Borrar</a>
-                                @endif
-                            </td>
+                            
 
                         </tr>
                         @endforeach
@@ -231,19 +194,7 @@
         <!-- END EXAMPLE TABLE PORTLET-->
     </div>
 </div>
-<div id="myModal" class="modal fade">
-    <div class="modal-dialog  modal-lg">
-        <div class="modal-content">
-            <!-- dialog body -->
-            <div class="modal-body ">
-                
-                <div class="formula-content" style="height:600px;overflow-y: scroll;"></div>
-            </div>
-            <!-- dialog buttons -->
-            <div class="modal-footer" style="border-top:0;"><button type="button" class="btn btn-primary cerrar-popup">CERRAR</button></div>
-        </div>
-    </div>
-</div>
+
 <!-- END PAGE CONTENT-->
 @stop
 
@@ -315,88 +266,9 @@ jQuery(document).ready(function () {
     ComponentsPickers.init();
     FormSamples.init();
     
-    
-    
-    $('.cerrar-popup').click(function (e) {
-        $('#myModal').modal('hide')
-        
-    });
-
-    $('.ver-popup').click(function (e) {
-        e.preventDefault();
-        
-        $.ajax({
-            type: "GET",
-            url: '/popup-formula-valorada/'+$(this).data('id')+'/100',
-            data: {
-                "_token": $('#token-ajax').find('input').val(),
-                "id_prod": 1
-
-            },
-            success: function (data) {
-                $('.formula-content').html(data);
-
-            }
-        });
-        
-        
-
-        $("#myModal").modal({// wire up the actual modal functionality and show the dialog
-            "backdrop": "static",
-            "keyboard": true,
-            "show": true                     // ensure the modal is shown immediately
-        });
-
-    });
-    
-    
-    $('.normal-del').click(function (e) {
-        e.preventDefault();
-        var href = $(this).attr('href');
-        bootbox.confirm('Deseas borrar este registro?', function (result) {
-            if (result) {
-                window.location = href;
-
-            }
-
-
-        });
-    });
-    $('.del-base').click(function (e) {
-        e.preventDefault();
-        var href = $(this).attr('href');
-        var id = $(this).data('id');
-        bootbox.confirm('Deseas borrar este registro?', function (result) {
-            if (result) {
-                $.ajax({
-                    type: "POST",
-                    url: '{{ URL::to("check-base-has-child") }}',
-                    data: {"_token": $('#token-ajax').find('input').val(), "id": id},
-                    success: function (data) {
-                        if (!data.res) {
-                            window.location = href;
-                        } else {
-                            bootbox.alert('Esta formula Base tiene formulas coloreadas, para eliminarla primero debes borrarlas las coloreadas.');
-                        }
-                    }
-                });
-
-            }
-        });
-
-
-
-    });
 
 
 });
 </script>
-<!-- BEGIN GOOGLE RECAPTCHA -->
-<script type="text/javascript">
-    var RecaptchaOptions = {
-        theme: 'custom',
-        custom_theme_widget: 'recaptcha_widget'
-    };
-</script>
-<!-- END JAVASCRIPTS -->
+
 @stop

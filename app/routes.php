@@ -63,10 +63,6 @@ Route::group(array('before' => 'auth'), function() {
 //                    Auth::logout();
 //                    return Redirect::route('login');
 //                }));
-    //GENERALES          
-    Route::get('/generales', 'GeneralController@get_index');
-
-
     //PROVEEDORES          
     Route::get('/proveedores', 'ProveedorController@listProveedores');
     Route::get('/del-proveedor/{id}', 'ProveedorController@delProveedor');
@@ -102,6 +98,9 @@ Route::group(array('before' => 'auth'), function() {
 //dame(Auth::user()->type,1);
     //FORMULAS
     Route::group(array('before' => 'admin'), function() {
+
+        //GENERALES          
+        Route::get('/generales', 'GeneralController@get_index');
         //if(Auth::user()->type==1){
         /* ADMIN FORMULAS */
         Route::get('/formulas', 'FormulaController@get_index');
@@ -132,8 +131,16 @@ Route::group(array('before' => 'auth'), function() {
 
 
         //});
-
         //}
+    });
+
+
+    Route::group(array('before' => 'comercial'), function() {
+
+        Route::get('/formulas-comercial', 'FormulaComercialController@get_index');
+        Route::Post('/formulas-comercial', 'FormulaComercialController@post_index');
+        Route::get('/edit-formula-comercial/{id}', 'FormulaComercialController@get_edit');
+        Route::post('/update-formula-comercial', 'FormulaComercialController@post_update');
     });
 
     Route::group(array('before' => 'admin_pinturas'), function() {

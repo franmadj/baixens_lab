@@ -147,7 +147,7 @@ class UserController extends BaseController {
                 //$correct_ip=  in_array(Request::getClientIp(), ['192.168.0.73','::1','192.168.0.20', '192.168.0.75']);
                 //var_dump(Hash::check($password, $user->password));exit;
                 //var_dump(Hash::check($password, $user->password) ,  $user->type);exit;
-                if (Hash::check($password, $user->password) && ( (in_array($user->type, [2, 3, 4]) or ( $user->type == 1 && $correct_ip) ))) {
+                if (Hash::check($password, $user->password) && ( (in_array($user->type, [2, 3, 4, 5]) or ( $user->type == 1 && $correct_ip) ))) {
                     Auth::login($user, true);
                     Session::put('user_img', $user->img);
 //					Session::put('user_username', $user->username);

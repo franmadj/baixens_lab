@@ -307,7 +307,7 @@
 
             @endif
 
-            @if($generalData['current_user']->type!=4)
+            @if($generalData['current_user']->type!=4 && $generalData['current_user']->type!=5)
 
             <!-- PRODUCTOS -->
 
@@ -337,6 +337,35 @@
                 </ul>
             </li>
 
+            @endif
+            
+            @if($generalData['current_user']->type==5)
+            
+            <!-- FORMULAS -->
+            <li  class="{{ isset($formulaActive) ? $formulaActive : '' ;}}">
+                <a href="javascript:;">
+                    <i class="fa fa-th"></i>
+                    <span class="title">
+                        Formulas
+                    </span>
+                    <span class="arrow ">
+                    </span>
+                </a>
+                <ul class="sub-menu">
+                    <li>
+                        <a href="{{ URL::to('/formulas-comercial') }}">
+                            <i class="fa fa-eye"></i>
+                            Ver
+                        </a>
+                    </li>
+                    
+                </ul>
+
+
+
+            </li>
+            <!-- GENERALES -->
+            
             @endif
 
         </ul>

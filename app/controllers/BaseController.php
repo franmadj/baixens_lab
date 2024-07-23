@@ -4,7 +4,7 @@ class BaseController extends Controller {
 
     var $generalData;
     var $tipos;
-    var $tipo_usuarios = [1 => 'Admin', 2 => 'Gestión pedidos', 3 => 'Colorimetría', 4 => 'SATE'];
+    var $tipo_usuarios = [1 => 'Admin', 2 => 'Gestión pedidos', 3 => 'Colorimetría', 4 => 'SATE', 5 => 'Comercial'];
 
     public function __construct() {
         Input::merge(array_map([$this, 'trimInput'], Input::all()));

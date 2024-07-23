@@ -40,7 +40,7 @@ class FormulaBaseController extends BaseController {
                     'nombres' => Formula::dropDown(),
                     'nombres_formula' => Formula::dropDown(true),
                     'codigos' => Producto::dropDown('codigo'),
-                    'eqs' => FormulasEquivalencia::dropDown(),
+                    'eqs' => FormulasEquivalencia::listItems(),
                     'viejos' => $this->viejos,
                     'formulaActive' => 'active'
         ));
@@ -59,7 +59,7 @@ class FormulaBaseController extends BaseController {
                     'secciones' => SeccionesFormula::dropDown(),
                     'nombres' => Formula::dropDown(),
                     'nombres_formula' => Formula::dropDown(true),
-                    'eqs' => FormulasEquivalencia::dropDown(),
+                    'eqs' => FormulasEquivalencia::listItems(),
                     'codigos' => Producto::dropDown('codigo'),
                     'viejos' => $this->viejos, 'formulaActive' => 'active'
         ));
@@ -408,7 +408,7 @@ class FormulaBaseController extends BaseController {
                         'secciones' => SeccionesFormula::dropDown(),
                         'nombres' => Formula::dropDown(),
                         'nombres_formula' => Formula::dropDown(true),
-                        'eqs' => FormulasEquivalencia::dropDown(),
+                        'eqs' => FormulasEquivalencia::listItems(),
                         'codigos' => Producto::dropDown('codigo'),
                         'viejos' => $this->viejos, 'formulaActive' => 'active'
             ));

@@ -59,6 +59,12 @@ Route::filter('admin_pinturas', function()
         
 });
 
+Route::filter('comercial', function()
+{
+        if (Auth::user()->type!=5){ return Redirect::to('pedidos'); }
+        
+});
+
 
 
 Route::filter('auth.basic', function()
