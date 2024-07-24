@@ -52,10 +52,12 @@ Route::filter('admin', function()
 {
         if (Auth::user()->type==2){ return Redirect::to('pedidos'); }
         if (Auth::user()->type==3){ return Redirect::to('formulas-pinturas'); }
+        if (Auth::user()->type==5){ return Redirect::to('formulas-comercial'); }
 });
 Route::filter('admin_pinturas', function()
 {
         if (Auth::user()->type==2){ return Redirect::to('pedidos'); }
+        if (Auth::user()->type==5){ return Redirect::to('formulas-comercial'); }
         
 });
 
