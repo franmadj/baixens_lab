@@ -231,6 +231,9 @@ if ($numFormula) {
 
 $html .= '<span class="texto">' . $fechaUltEdicion . '</span><span style="font-size:20px;color:#aeaeae;border-right:solid thin #aeaeae;">&nbsp;</span> ';
 
+if('Sate'==$seccion){
+    $html .= '<span class="texto"><small>NP: </small>' . $formula->numero_sate . '</span><span style="font-size:20px;color:#aeaeae;border-right:solid thin #aeaeae;">&nbsp;</span> ';
+}
 if ($instrucciones) {
     $html .= '<small>IT.:</small><span class="texto">'.$instrucciones.'</span>';
 }

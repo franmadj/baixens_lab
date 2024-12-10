@@ -136,7 +136,11 @@ jQuery(document).ready(function ($) {
                         <div class="col-md-4">
 
                             <p class="form-control-static">
-                                Base Coloreada
+                                @if($formula->seccionesFormula)
+                                {{ $formula->seccionesFormula->seccion  }}
+                                @else
+                                SATE
+                                @endif
                             </p>
                         </div>
                     </div>

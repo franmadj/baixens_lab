@@ -38,6 +38,7 @@ Route::get('/print-formula-sin-valorar-hija/{id}/{cant}', 'FormulaController@pri
 Route::get('/print-formula-ajustada-base/{id}/{cant}/{size}', 'FormulaController@print_formula_ajustada_base');
 Route::get('/print-formula-ajustada-ma/{id}/{cant}/{size}', 'FormulaController@print_formula_ajustada_ma');
 Route::get('/popup-formula-valorada/{id}/{cant}', 'FormulaController@popup_formula_valorada');
+Route::get('/popup-formula-base-coloreada/{id}/{cant}', 'FormulaController@popup_formula_base_coloreada');
 
 
 /* PDF FORMULAS BASE */

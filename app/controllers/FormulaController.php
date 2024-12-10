@@ -995,8 +995,11 @@ class FormulaController extends BaseController {
 
     public function popup_formula_valorada($id, $cantProduccion) {
         //dame($_GET,1);
-        $user_img = $this->get_user_img();
         $formula = Formula::find($id);
+        if ($formula->parent)
+            return $this->popup_formula_base_coloreada($id, $cantProduccion);
+        $user_img = $this->get_user_img();
+
         if ($cantProduccion != 0) {
             $formula = $this->set_cantidad($formula, $cantProduccion);
         }
@@ -1004,6 +1007,42 @@ class FormulaController extends BaseController {
             'formula' => $formula, 'formulaActive' => 'active', 'user_img' => $user_img, 'logo_img' => 'logo_color.jpg',
         );
         return View::make('formulas/impresiones/popup-formula-valorada', $data);
+    }
+
+    public function popup_formula_base_coloreada($id, $cantProduccion) {
+
+
+        $formula = Formula::find($id);
+        $parent = Formula::where('id', '=', $formula->parent)->first();
+//        if ($cantProduccion != 0) {
+//            $formula = $this->set_cantidad($formula, $cantProduccion);
+//        }
+
+        $colores = [];
+        $i_colores = 0;
+        //DVULEVE VALORES
+        foreach ($formula->FormulasDetalle as $f) {
+            if (isset($f->Producto->codigo))
+                $colores[$i_colores]['Producto'] = $f->Producto;
+            if (isset($f->cantidad))
+                $colores[$i_colores]['cantidad'] = $f->cantidad;
+
+            $i_colores++;
+        }
+        //dame($cantProduccion,1);
+
+        $componentes = $this->get_formula_hija_detalle_data($parent, $colores);
+
+//        var_dump($componentes);
+//        exit;
+
+        $data = array(
+            'formula' => $formula,
+            'formulaActive' => 'active',
+            'logo_img' => 'logo_color.jpg',
+            'componentes' => $componentes
+        );
+        return View::make('formulas/impresiones/popup-formula-base-coloreada', $data);
     }
 
     public function pdf_formula_valorada($id, $cantProduccion) {
@@ -1034,9 +1073,9 @@ class FormulaController extends BaseController {
             $formula = $this->set_cantidad($formula, $cantProduccion);
         }
         $data = array(
-            'formula' => $formula, 
-            'formulaActive' => 'active', 
-            'user_img' => $user_img, 
+            'formula' => $formula,
+            'formulaActive' => 'active',
+            'user_img' => $user_img,
             'logo_img' => 'logo_color.jpg'
         );
         if ($dividida)
@@ -1063,7 +1102,7 @@ class FormulaController extends BaseController {
         );
         return Response::json($response);
     }
-    
+
     public function ajax_set_tipo_maquina_display() {
         $res = DB::table('formulas')->where('id', Input::get('id'))->update(array(
             'tipo_maquina_base' => Input::get('val')
@@ -1389,6 +1428,41 @@ class FormulaController extends BaseController {
                     'url_base' => '-base',
                     'filter' => false
         ));
+    }
+
+    function get_formula_hija_detalle_data($formula, $colores = []) {
+        $data = [];
+        $coloreada = false;
+
+        //dame($colores, 1);
+        $i = 1;
+
+        $index = 16;
+        $i_color = 0;
+
+        foreach ($formula->FormulasDetalle as $forDetalle) {
+            $i++;
+            if (isset($forDetalle->Producto->codigo)) {
+                $data[] = ['Producto' => $forDetalle->Producto, 'cantidad' => $forDetalle->cantidad];
+
+
+
+
+
+
+                if ($forDetalle->esColor == 1 && !$coloreada) {
+                    $coloreada = true;
+
+                    foreach ($colores as $color) {
+                        $data[] = ['Producto' => $color['Producto'], 'cantidad' => $color['cantidad']];
+                    }
+                }
+            }
+        }
+
+        //dame($detalles,1);
+
+        return $data;
     }
 
     function get_formula_hija_detalle($formula, $colores = []) {
